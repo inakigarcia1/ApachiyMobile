@@ -279,12 +279,28 @@ fun SearchScreen(
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { submitCurrentQuery() }),
                             trailingContent = {
-                                IconButton(onClick = { submitCurrentQuery() }) {
-                                    Icon(
-                                        imageVector = Icons.Rounded.Search,
-                                        contentDescription = stringResource(Res.string.compose_nav_search),
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    if (query.isNotBlank()) {
+                                        IconButton(
+                                            onClick = {
+                                                query = ""
+                                                lastRequestedQuery = null
+                                            },
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Rounded.Close,
+                                                contentDescription = stringResource(Res.string.compose_search_clear),
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                    }
+                                    IconButton(onClick = { submitCurrentQuery() }) {
+                                        Icon(
+                                            imageVector = Icons.Rounded.Search,
+                                            contentDescription = stringResource(Res.string.compose_nav_search),
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
                                 }
                             },
                         )

@@ -28,7 +28,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.Alignment
 import com.nuvio.app.core.build.AppVersionConfig
 import nuvio.composeapp.generated.resources.Res
-import nuvio.composeapp.generated.resources.compose_about_made_with
 import nuvio.composeapp.generated.resources.compose_about_version_format
 import nuvio.composeapp.generated.resources.compose_settings_page_account
 import nuvio.composeapp.generated.resources.compose_settings_page_advanced
@@ -279,20 +278,13 @@ internal fun LazyListScope.settingsRootContent(
         ) {
             if (showAboutSection) {
                 MemberBrandWordmark(
-                    height = if (isTablet) 30.dp else 26.dp,
+                    height = if (isTablet) 56.dp else 48.dp,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
                 androidx.compose.foundation.layout.Spacer(
-                    modifier = Modifier.height(if (isTablet) 10.dp else 8.dp),
+                    modifier = Modifier.height(if (isTablet) 12.dp else 10.dp),
                 )
             }
-            Text(
-                text = stringResource(Res.string.compose_about_made_with),
-                modifier = Modifier.fillMaxWidth(),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                textAlign = TextAlign.Center,
-            )
             Text(
                 text = stringResource(
                     Res.string.compose_about_version_format,

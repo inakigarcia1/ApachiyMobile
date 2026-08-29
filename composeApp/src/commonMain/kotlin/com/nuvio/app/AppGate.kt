@@ -269,7 +269,11 @@ internal fun AppGate(
         profileSelectionTransitionActive = false
         if (profiles.isEmpty()) {
             autoSkipProfileSelection = true
-            gateScreen = AppGateScreen.ProfileSelection.name
+            gateScreen = if (ProfileRepository.state.value.isLoaded) {
+                AppGateScreen.ProfileSelection.name
+            } else {
+                AppGateScreen.Loading.name
+            }
             return
         }
 
@@ -295,7 +299,7 @@ internal fun AppGate(
         }
     }
 
-    LaunchedEffect(authState, networkStatusUiState.condition, profileState.profiles) {
+    LaunchedEffect(authState, networkStatusUiState.condition, profileState.profiles, profileState.isLoaded) {
         val cachedProfiles = profileState.profiles
         val hasCachedProfileAccess =
             cachedProfiles.isNotEmpty() &&

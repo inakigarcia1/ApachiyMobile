@@ -5,6 +5,9 @@ import com.nuvio.app.core.network.ApachiyConfig
 import com.nuvio.app.features.addons.httpRequestRaw
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.decodeFromJsonElement
+import kotlinx.serialization.json.jsonObject
 
 object ApachiyDeviceApi {
     private val json = Json {
@@ -30,8 +33,24 @@ object ApachiyDeviceApi {
     fun decodeRegistrationError(body: String): DeviceRegistrationError? =
         runCatching { json.decodeFromString<DeviceRegistrationError>(body) }.getOrNull()
 
-    fun decodeDeviceList(body: String): List<DeviceSummaryDto> =
-        runCatching { json.decodeFromString<List<DeviceSummaryDto>>(body) }.getOrDefault(emptyList())
+    fun decodeDeviceList(body: String): List<DeviceSummaryDto>? {
+        val trimmed = body.trim()
+        if (trimmed.isEmpty()) return null
+        return runCatching {
+            val element = json.parseToJsonElement(trimmed)
+            when (element) {
+                is JsonArray -> json.decodeFromJsonElement<List<DeviceSummaryDto>>(element)
+                else -> {
+                    val root = element.jsonObject
+                    val devices = root["devices"] ?: root["Devices"] ?: return@runCatching null
+                    json.decodeFromJsonElement<List<DeviceSummaryDto>>(devices)
+                }
+            }
+        }.getOrNull()
+    }
+
+    fun decodeDeviceListResponse(body: String): DeviceListResponseDto? =
+        runCatching { json.decodeFromString<DeviceListResponseDto>(body) }.getOrNull()
 
     fun decodeAccountMe(body: String): AccountMeResponse =
         json.decodeFromString(body)

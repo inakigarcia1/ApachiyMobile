@@ -63,17 +63,23 @@ private data class StoredProfilePayload(
     val profiles: List<NuvioProfile> = emptyList(),
 )
 
+private const val DEFAULT_PRIMARY_PROFILE_COLOR = "#D4A574"
+
 object ProfileRepository {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val log = Logger.withTag("ProfileRepository")
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private fun localizedString(resource: StringResource): String = runBlocking { getString(resource) }
 
+    private fun localizedString(resource: StringResource, vararg formatArgs: Any): String =
+        runBlocking { getString(resource, *formatArgs) }
+
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
     private var activeProfileIndex: Int = 1
     private var loadedCacheForUserId: String? = null
+    private var ensuringDefaultPrimaryProfile = false
 
     val activeProfileId: Int get() = activeProfileIndex
 
@@ -144,6 +150,32 @@ object ProfileRepository {
             if (!_state.value.isLoaded) {
                 _state.value = _state.value.copy(isLoaded = true)
             }
+        }
+        if (!ensuringDefaultPrimaryProfile) {
+            ensureDefaultPrimaryProfile()
+        }
+    }
+
+    suspend fun ensureDefaultPrimaryProfile() {
+        if (ensuringDefaultPrimaryProfile || _state.value.profiles.isNotEmpty()) return
+        ensuringDefaultPrimaryProfile = true
+        try {
+            val name = localizedString(Res.string.compose_profile_default_name, 1)
+            val payload = ProfilePushPayload(
+                profileIndex = 1,
+                name = name,
+                avatarColorHex = DEFAULT_PRIMARY_PROFILE_COLOR,
+                usesPrimaryAddons = true,
+            )
+            createProfile(
+                name = name,
+                avatarColorHex = DEFAULT_PRIMARY_PROFILE_COLOR,
+            )
+            if (_state.value.profiles.isEmpty()) {
+                applyPayloadsLocally(listOf(payload))
+            }
+        } finally {
+            ensuringDefaultPrimaryProfile = false
         }
     }
 

@@ -61,43 +61,58 @@ object RemoteLogoutWatcher {
     }
 
     private suspend fun watchRealtimeDeletes() {
-        val installationId = SyncClientIdentity.currentClientId()
-        val channel = SupabaseProvider.client.channel("apachiy-device-logout-$installationId")
-        try {
-            val changes = channel.postgresChangeFlow<PostgresAction.Delete>(schema = "public") {
-                table = "user_devices"
-            }
-            coroutineScope {
-                val job = launch {
-                    changes.collect { action ->
-                        val deletedInstallationId = action.oldRecord["installation_id"]
-                            ?.jsonPrimitive?.contentOrNull
-                        val deletedDeviceId = action.oldRecord["id"]
-                            ?.jsonPrimitive?.contentOrNull?.toLongOrNull()
-                        val registeredDeviceId = SyncClientIdentity.loadRegisteredDeviceId()
-                        val matchesInstallation =
-                            deletedInstallationId != null && deletedInstallationId == installationId
-                        val matchesDeviceId =
-                            deletedDeviceId != null &&
-                                registeredDeviceId != null &&
-                                deletedDeviceId == registeredDeviceId
-                        val missingLocally = !matchesInstallation && !matchesDeviceId &&
-                            stillRegisteredOnApi(installationId).not()
-                        if (!matchesInstallation && !matchesDeviceId && !missingLocally) return@collect
-                        log.w { "device row deleted remotely; signing out" }
-                        AuthRepository.signOut()
-                    }
+        while (true) {
+            val installationId = SyncClientIdentity.currentClientId()
+            val channel = SupabaseProvider.client.channel("apachiy-device-logout-$installationId")
+            try {
+                val changes = channel.postgresChangeFlow<PostgresAction>(schema = "public") {
+                    table = "user_devices"
                 }
-                channel.subscribe(blockUntilSubscribed = true)
-                job.join()
+                coroutineScope {
+                    val job = launch {
+                        changes.collect { action ->
+                            if (actionMatchesThisDevice(action, installationId)) {
+                                log.w { "device row changed remotely; signing out" }
+                                AuthRepository.signOut()
+                            }
+                        }
+                    }
+                    channel.subscribe(blockUntilSubscribed = true)
+                    job.join()
+                }
+                return
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Throwable) {
+                log.w(error) { "remote logout watcher failed; retrying" }
+                delay(8_000)
+            } finally {
+                runCatching { channel.unsubscribe() }
             }
-        } catch (error: CancellationException) {
-            throw error
-        } catch (error: Throwable) {
-            log.w(error) { "remote logout watcher failed" }
-        } finally {
-            runCatching { channel.unsubscribe() }
         }
+    }
+
+    private fun actionMatchesThisDevice(action: PostgresAction, installationId: String): Boolean {
+        val record = when (action) {
+            is PostgresAction.Delete -> action.oldRecord
+            is PostgresAction.Update -> action.record
+            else -> return false
+        }
+        val changedInstallationId = record["installation_id"]?.jsonPrimitive?.contentOrNull
+        val changedDeviceId = record["id"]?.jsonPrimitive?.contentOrNull?.toLongOrNull()
+        val registeredDeviceId = SyncClientIdentity.loadRegisteredDeviceId()
+        val matchesInstallation =
+            changedInstallationId != null && changedInstallationId == installationId
+        val matchesDeviceId =
+            changedDeviceId != null &&
+                registeredDeviceId != null &&
+                changedDeviceId == registeredDeviceId
+        if (!matchesInstallation && !matchesDeviceId) return false
+        if (action is PostgresAction.Update) {
+            val revokedAt = record["revoked_at"]?.jsonPrimitive?.contentOrNull
+            return !revokedAt.isNullOrBlank() && revokedAt != "null"
+        }
+        return true
     }
 
     private suspend fun pollDeviceList() {
@@ -115,18 +130,20 @@ object RemoteLogoutWatcher {
 
     private suspend fun stillRegisteredOnApi(installationId: String): Boolean {
         if (ApachiyConfig.API_BASE_URL.isBlank()) return true
-        if (SyncClientIdentity.loadRegisteredDeviceId() == null) return true
         val token = runCatching {
             SupabaseProvider.client.auth.currentAccessTokenOrNull()
         }.getOrNull() ?: return true
         return runCatching {
             val response = ApachiyDeviceApi.getDevices(token)
-            if (response.status !in 200..299) return@runCatching true
-            val rows = ApachiyDeviceApi.decodeDeviceList(response.body)
+            when (response.status) {
+                401, 403, 410, 423 -> return@runCatching false
+                !in 200..299 -> return@runCatching true
+            }
+            val rows = ApachiyDeviceApi.decodeDeviceList(response.body) ?: return@runCatching true
             rows.any { it.resolvedInstallationId.equals(installationId, ignoreCase = true) }
         }.getOrDefault(true)
     }
 
-    private const val LIST_POLL_INITIAL_DELAY_MS = 15_000L
-    private const val LIST_POLL_INTERVAL_MS = 45_000L
+    private const val LIST_POLL_INITIAL_DELAY_MS = 4_000L
+    private const val LIST_POLL_INTERVAL_MS = 12_000L
 }

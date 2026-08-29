@@ -34,9 +34,7 @@ object AccountStatusRepository {
                 .map { state -> state is AuthState.Authenticated && !state.isAnonymous }
                 .distinctUntilChanged()
                 .collect { isAuthed ->
-                    if (isAuthed) {
-                        refresh()
-                    } else {
+                    if (!isAuthed) {
                         clear()
                     }
                 }

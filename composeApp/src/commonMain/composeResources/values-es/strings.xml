@@ -409,6 +409,7 @@
     <string name="compose_player_unlock_controls">Desbloquear controles del reproductor</string>
     <string name="compose_player_youre_watching">Estás viendo</string>
     <string name="compose_profile_add_profile">Añadir perfil</string>
+    <string name="compose_profile_default_name">Perfil %1$d</string>
     <string name="compose_search_clear">Borrar búsqueda</string>
     <string name="compose_search_discover_title">Descubrir</string>
     <string name="compose_search_empty_failed_message">Los complementos instalados no devolvieron resultados de búsqueda válidos.</string>
@@ -1236,7 +1237,8 @@
     <string name="home_continue_watching_watched">%1$s visto</string>
     <string name="home_continue_watching_hours_minutes_left">Falta %1$dh %2$dm</string>
     <string name="home_continue_watching_minutes_left">Faltan %1$dm</string>
-    <string name="home_empty_no_active_addons_message">Instala y valida al menos un addon antes de cargar filas de catálogo en Inicio.</string>
+    <string name="home_empty_no_active_addons_message">Gestione su cuenta en apachiy.org/dashboard.</string>
+    <string name="home_empty_no_active_addons_title">No se pudo cargar el catálogo.</string>
     <string name="home_empty_no_rows_message">Los addons instalados no exponen actualmente catálogos compatibles con el tablero sin extras requeridos.</string>
     <string name="home_empty_no_rows_title">No hay filas de inicio disponibles</string>
     <string name="home_view_details">Ver detalles</string>
@@ -1333,7 +1335,7 @@
     <string name="streams_finding_source">Buscando fuente…</string>
     <string name="streams_loading_subtitles">Cargando subtítulos de complementos...</string>
     <string name="streams_loading_skip_segments">Cargando segmentos de salto...</string>
-    <string name="streams_finding_streams">Buscando streams…</string>
+    <string name="streams_finding_streams">Cargando...</string>
     <string name="streams_link_copied">Enlace del stream copiado</string>
     <string name="streams_no_direct_link">No hay enlace directo del stream disponible</string>
     <string name="streams_no_metadata">No hay metadatos disponibles</string>

@@ -79,7 +79,11 @@ object DeviceRegistrar {
             lastAttemptMark = TimeSource.Monotonic.markNow()
             val request = buildRequest()
             log.i { "registering device installation_id=${request.installationId.take(8)}…" }
-            attemptWithRetry(accessToken, request)
+            try {
+                attemptWithRetry(accessToken, request)
+            } finally {
+                AccountStatusRepository.refresh()
+            }
         }
     }
 
@@ -102,7 +106,6 @@ object DeviceRegistrar {
                         log.w { "device was reported revoked; signing out" }
                         AuthRepository.signOut()
                     }
-                    AccountStatusRepository.refresh()
                     return
                 }
                 val err = ApachiyDeviceApi.decodeRegistrationError(response.body)

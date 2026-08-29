@@ -947,7 +947,7 @@ fun HomeScreen(
                     item {
                         HomeEmptyStateCard(
                             modifier = Modifier.padding(horizontal = 16.dp),
-                            title = stringResource(Res.string.compose_search_empty_no_active_addons_title),
+                            title = stringResource(Res.string.home_empty_no_active_addons_title),
                             message = stringResource(Res.string.home_empty_no_active_addons_message),
                         )
                     }

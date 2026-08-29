@@ -33,6 +33,12 @@ data class DeviceSummaryDto(
 }
 
 @Serializable
+data class DeviceListResponseDto(
+    val devices: List<DeviceSummaryDto> = emptyList(),
+    @SerialName("maxDevices") val maxDevices: Int = 0,
+)
+
+@Serializable
 data class DeviceRegistrationError(
     val error: String,
     val message: String? = null,
