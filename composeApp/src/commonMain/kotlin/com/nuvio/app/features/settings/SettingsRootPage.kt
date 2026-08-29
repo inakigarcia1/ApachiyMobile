@@ -92,6 +92,7 @@ internal fun LazyListScope.settingsRootContent(
     showContentDiscovery: Boolean = true,
     showIntegrations: Boolean = true,
     showTracking: Boolean = true,
+    showLicensesAttributions: Boolean = true,
 ) {
     if (showAccountSection) {
         item {
@@ -218,14 +219,16 @@ internal fun LazyListScope.settingsRootContent(
                         isTablet = isTablet,
                         onClick = { uriHandler.openUri(PRIVACY_POLICY_URL) },
                     )
-                    SettingsGroupDivider(isTablet = isTablet)
-                    SettingsNavigationRow(
-                        title = stringResource(Res.string.compose_settings_page_licenses_attributions),
-                        description = stringResource(Res.string.about_licenses_attributions_subtitle),
-                        icon = Icons.Rounded.Info,
-                        isTablet = isTablet,
-                        onClick = onLicensesAttributionsClick,
-                    )
+                    if (showLicensesAttributions) {
+                        SettingsGroupDivider(isTablet = isTablet)
+                        SettingsNavigationRow(
+                            title = stringResource(Res.string.compose_settings_page_licenses_attributions),
+                            description = stringResource(Res.string.about_licenses_attributions_subtitle),
+                            icon = Icons.Rounded.Info,
+                            isTablet = isTablet,
+                            onClick = onLicensesAttributionsClick,
+                        )
+                    }
                     if (onCheckForUpdatesClick != null) {
                         SettingsGroupDivider(isTablet = isTablet)
                         SettingsNavigationRow(

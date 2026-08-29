@@ -123,9 +123,9 @@ fun SearchScreen(
         lastRequestedQuery = query.trim().takeIf { it.isNotBlank() }
     }
     var observedOfflineState by remember { mutableStateOf(false) }
-    val discoverInFocus by remember(query, listState) {
+    val discoverInFocus by remember(lastRequestedQuery, listState) {
         derivedStateOf {
-            query.isBlank() && listState.firstVisibleItemIndex > 0
+            lastRequestedQuery.isNullOrBlank() && listState.firstVisibleItemIndex > 0
         }
     }
 
@@ -173,8 +173,8 @@ fun SearchScreen(
         }
     }
 
-    LaunchedEffect(listState, query, discoverUiState.canLoadMore, discoverUiState.isLoading) {
-        if (query.isNotBlank()) return@LaunchedEffect
+    LaunchedEffect(listState, lastRequestedQuery, discoverUiState.canLoadMore, discoverUiState.isLoading) {
+        if (!lastRequestedQuery.isNullOrBlank()) return@LaunchedEffect
 
         snapshotFlow { listState.layoutInfo }
             .map { layoutInfo ->
@@ -196,7 +196,7 @@ fun SearchScreen(
         SearchHistoryRepository.recordSearch(normalizedQuery)
     }
 
-    LaunchedEffect(networkStatusUiState.condition, query, addonRefreshKey) {
+    LaunchedEffect(networkStatusUiState.condition, lastRequestedQuery, addonRefreshKey) {
         when (networkStatusUiState.condition) {
             NetworkCondition.NoInternet,
             NetworkCondition.ServersUnreachable,
@@ -208,7 +208,7 @@ fun SearchScreen(
                 if (!observedOfflineState) return@LaunchedEffect
                 observedOfflineState = false
 
-                val normalizedQuery = query.trim()
+                val normalizedQuery = lastRequestedQuery?.trim().orEmpty()
                 if (normalizedQuery.isBlank()) {
                     SearchRepository.refreshDiscover(
                         addons = addonsUiState.addons,
@@ -239,7 +239,7 @@ fun SearchScreen(
             homeSectionHorizontalPaddingForWidth(maxWidth.value)
         }
         val headerTitle = when {
-            query.isNotBlank() -> stringResource(Res.string.compose_nav_search)
+            !lastRequestedQuery.isNullOrBlank() -> stringResource(Res.string.compose_nav_search)
             discoverInFocus -> stringResource(Res.string.compose_search_discover_title)
             else -> stringResource(Res.string.compose_nav_search)
         }
@@ -278,18 +278,14 @@ fun SearchScreen(
                             modifier = Modifier.focusRequester(focusRequester),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                             keyboardActions = KeyboardActions(onSearch = { submitCurrentQuery() }),
-                            trailingContent = if (query.isNotBlank()) {
-                                {
-                                    IconButton(onClick = { submitCurrentQuery() }) {
-                                        Icon(
-                                            imageVector = Icons.Rounded.Search,
-                                            contentDescription = stringResource(Res.string.compose_nav_search),
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        )
-                                    }
+                            trailingContent = {
+                                IconButton(onClick = { submitCurrentQuery() }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Search,
+                                        contentDescription = stringResource(Res.string.compose_nav_search),
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
                                 }
-                            } else {
-                                null
                             },
                         )
                     }
@@ -298,7 +294,7 @@ fun SearchScreen(
             }
         }
 
-        if (query.isBlank()) {
+        if (lastRequestedQuery.isNullOrBlank()) {
             if (recentSearches.isNotEmpty()) {
                 item(key = "recent_searches") {
                     SearchRecentSection(
@@ -331,17 +327,8 @@ fun SearchScreen(
                     onPosterLongClick = onPosterLongClick,
                 )
             } else {
-                val normalizedQuery = query.trim()
-                val isWaitingForSearch = normalizedQuery.isNotBlank() && lastRequestedQuery != normalizedQuery
+                val normalizedQuery = lastRequestedQuery?.trim().orEmpty()
                 when {
-                    isWaitingForSearch -> {
-                        items(2) {
-                            HomeSkeletonRow(
-                                modifier = Modifier.padding(horizontal = homeSectionPadding),
-                            )
-                        }
-                    }
-
                     uiState.isLoading && uiState.sections.isEmpty() -> {
                         items(2) {
                             HomeSkeletonRow(

@@ -37,7 +37,7 @@ data class NuvioProfile(
     @SerialName("user_id") val userId: String = "",
     @SerialName("profile_index") val profileIndex: Int = 1,
     val name: String = "",
-    @SerialName("avatar_color_hex") val avatarColorHex: String = "#1E88E5",
+    @SerialName("avatar_color_hex") val avatarColorHex: String = "#D4A574",
     @SerialName("avatar_id") val avatarId: String? = null,
     @SerialName("avatar_url") val avatarUrl: String? = null,
     @SerialName("profile_background_id") val profileBackgroundId: String? = null,
@@ -97,13 +97,13 @@ fun parseHexColor(hex: String): Color {
         when (cleaned.length) {
             6 -> Color(("FF$cleaned").toLong(16))
             8 -> Color(cleaned.toLong(16))
-            else -> Color(0xFF1E88E5)
+            else -> Color(0xFFD4A574)
         }
-    }.getOrDefault(Color(0xFF1E88E5))
+    }.getOrDefault(Color(0xFFD4A574))
 }
 
 val PROFILE_COLORS = listOf(
-    "#1E88E5", "#E53935", "#43A047", "#FB8C00",
+    "#D4A574", "#E53935", "#43A047", "#FB8C00",
     "#8E24AA", "#00ACC1", "#F4511E", "#3949AB",
     "#C0CA33", "#D81B60", "#00897B", "#5E35B1",
     "#7CB342", "#039BE5", "#FFB300", "#6D4C41",

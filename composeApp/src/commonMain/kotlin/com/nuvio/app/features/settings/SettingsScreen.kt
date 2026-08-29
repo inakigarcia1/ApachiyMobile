@@ -102,20 +102,29 @@ private fun SettingsPage.isEnabledByPolicy(): Boolean {
     return when (this) {
         SettingsPage.SupportersContributors ->
             operatorVisible && AppFeaturePolicy.supportersContributorsPageEnabled
+        SettingsPage.ContentDiscovery,
+        SettingsPage.Addons,
+        -> operatorVisible
         SettingsPage.Advanced,
         SettingsPage.Integrations,
         SettingsPage.TmdbEnrichment,
         SettingsPage.MdbListRatings,
         SettingsPage.Debrid,
         SettingsPage.Plugins,
-        SettingsPage.ContentDiscovery,
-        SettingsPage.Addons,
         SettingsPage.TraktAuthentication,
         SettingsPage.LicensesAttributions,
-        -> operatorVisible
+        -> false
         else -> true
     }
 }
+
+private fun List<SettingsSearchEntry>.visibleByPolicy(): List<SettingsSearchEntry> =
+    filter { entry ->
+        when (val target = entry.target) {
+            is SettingsSearchTarget.Page -> target.page.isEnabledByPolicy()
+            else -> true
+        }
+    }
 
 @Composable
 private fun settingsPageTitles(): Map<SettingsPage, String> {
@@ -625,7 +634,7 @@ private fun MobileSettingsScreen(
             liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
             switchProfileAvailable = onSwitchProfile != null,
             checkForUpdatesAvailable = onCheckForUpdatesClick != null,
-        )
+        ).visibleByPolicy()
 
         fun openSearchTarget(target: SettingsSearchTarget) {
             when (target) {
@@ -712,13 +721,14 @@ private fun MobileSettingsScreen(
                             onDownloadsClick = onDownloadsClick,
                             onAccountClick = onAccountClick,
                             onSwitchProfileClick = onSwitchProfile,
-                            showAboutSection = operatorVisible,
-                            showAdvancedSection = operatorVisible,
+                            showAboutSection = true,
+                            showAdvancedSection = false,
                             showSupportersContributorsPage = operatorVisible &&
                                 AppFeaturePolicy.supportersContributorsPageEnabled,
                             showContentDiscovery = operatorVisible,
-                            showIntegrations = operatorVisible,
-                            showTracking = operatorVisible,
+                            showIntegrations = false,
+                            showTracking = false,
+                            showLicensesAttributions = false,
                         )
                     }
                 }
@@ -1006,12 +1016,7 @@ private fun TabletSettingsScreen(
                 Spacer(modifier = Modifier.height(10.dp))
                 SettingsCategory.entries
                     .filter { category ->
-                        when (category) {
-                            SettingsCategory.About,
-                            SettingsCategory.Advanced,
-                            -> operatorVisible
-                            else -> true
-                        }
+                        category != SettingsCategory.Advanced
                     }
                     .forEach { category ->
                     SettingsSidebarItem(
@@ -1043,7 +1048,7 @@ private fun TabletSettingsScreen(
                 liquidGlassNativeTabBarSupported = liquidGlassNativeTabBarSupported,
                 switchProfileAvailable = onSwitchProfile != null,
                 checkForUpdatesAvailable = onCheckForUpdatesClick != null,
-            )
+            ).visibleByPolicy()
 
             fun openSearchTarget(target: SettingsSearchTarget) {
                 when (target) {
@@ -1146,13 +1151,14 @@ private fun TabletSettingsScreen(
                                 onSwitchProfileClick = onSwitchProfile,
                                 showAccountSection = activeCategory == SettingsCategory.Account,
                                 showGeneralSection = activeCategory == SettingsCategory.General,
-                                showAboutSection = operatorVisible && activeCategory == SettingsCategory.About,
-                                showAdvancedSection = operatorVisible && activeCategory == SettingsCategory.Advanced,
+                                showAboutSection = activeCategory == SettingsCategory.About,
+                                showAdvancedSection = false,
                                 showSupportersContributorsPage = operatorVisible &&
                                     AppFeaturePolicy.supportersContributorsPageEnabled,
                                 showContentDiscovery = operatorVisible,
-                                showIntegrations = operatorVisible,
-                                showTracking = operatorVisible,
+                                showIntegrations = false,
+                                showTracking = false,
+                                showLicensesAttributions = false,
                             )
                         }
                     }

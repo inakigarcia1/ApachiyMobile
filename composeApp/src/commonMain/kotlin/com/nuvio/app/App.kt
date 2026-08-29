@@ -15,14 +15,13 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
-import coil3.network.ktor3.KtorNetworkFetcherFactory
 import com.nuvio.app.core.account.InactiveSubscriptionNotifier
 import com.nuvio.app.core.auth.DeviceLimitNotifier
-import com.nuvio.app.core.network.createAuthenticatedNetworkHttpClient
 import com.nuvio.app.core.ui.DeviceLimitDialog
 import com.nuvio.app.core.ui.InactiveSubscriptionDialog
 import com.nuvio.app.core.ui.NativeProfileSwitcherController
 import com.nuvio.app.core.ui.NuvioTheme
+import com.nuvio.app.core.ui.ProtocolRelativeImageUrlMapper
 import com.nuvio.app.core.ui.configurePlatformImageLoader
 import com.nuvio.app.features.settings.ThemeSettingsRepository
 import com.nuvio.app.navigation.AppRoute
@@ -85,12 +84,7 @@ internal fun AppEnvironment(content: @Composable () -> Unit) {
             .memoryCachePolicy(CachePolicy.ENABLED)
             .components {
                 add(SvgDecoder.Factory())
-                add(
-                    coil3.network.ktor3.KtorNetworkFetcherFactory(
-                        httpClient = { createAuthenticatedNetworkHttpClient() },
-                        cacheStrategy = { coil3.network.cachecontrol.CacheControlCacheStrategy() },
-                    ),
-                )
+                add(ProtocolRelativeImageUrlMapper())
             }
             .configurePlatformImageLoader()
             .build()

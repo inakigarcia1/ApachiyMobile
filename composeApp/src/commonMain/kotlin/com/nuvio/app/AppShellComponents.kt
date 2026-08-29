@@ -35,6 +35,8 @@ import androidx.compose.ui.zIndex
 import com.nuvio.app.core.ui.DisintegrationRequest
 import com.nuvio.app.core.ui.NuvioLoadingIndicator
 import com.nuvio.app.core.ui.NuvioTokens
+import com.nuvio.app.core.ui.ProfileMeshBackground
+import com.nuvio.app.core.ui.ThemeColors
 import com.nuvio.app.core.ui.nuvio
 import com.nuvio.app.features.cloud.CloudLibraryContentType
 import com.nuvio.app.features.cloud.CloudLibraryFile
@@ -47,7 +49,6 @@ import com.nuvio.app.features.library.LibraryScreen
 import com.nuvio.app.features.library.LibrarySection
 import com.nuvio.app.features.library.LibrarySortOption
 import com.nuvio.app.features.profiles.NuvioProfile
-import com.nuvio.app.features.profiles.ProfileBackgroundBackdrop
 import com.nuvio.app.features.profiles.ProfileSwitcherTab
 import com.nuvio.app.features.search.SearchScreen
 import com.nuvio.app.features.settings.AppBrandWordmark
@@ -387,7 +388,7 @@ internal fun AppLoadingContent(
                     .height(44.dp),
             )
             Spacer(modifier = Modifier.height(tokens.spacing.sectionGap))
-            NuvioLoadingIndicator(color = tokens.colors.accent)
+            NuvioLoadingIndicator(color = ThemeColors.White.secondary)
         }
     }
 }
@@ -400,8 +401,8 @@ internal fun AppLaunchOverlay(
     Box(
         modifier = modifier.zIndex(NuvioTokens.Z.dialog),
     ) {
-        ProfileBackgroundBackdrop(
-            profile = profile,
+        ProfileMeshBackground(
+            profileColor = ThemeColors.White.secondary,
             modifier = Modifier.fillMaxSize(),
         )
         AppLoadingContent(modifier = Modifier.fillMaxSize())

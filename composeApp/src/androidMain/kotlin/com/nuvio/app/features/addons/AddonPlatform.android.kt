@@ -2,6 +2,7 @@ package com.nuvio.app.features.addons
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.nuvio.app.core.build.AppVersionConfig
 import com.nuvio.app.core.diagnostics.SentryNetworkBreadcrumbInterceptor
 import com.nuvio.app.core.network.ApachiyAddonAuthInterceptor
 import com.nuvio.app.core.network.IPv4FirstDns
@@ -107,6 +108,21 @@ private fun buildAddonHttpClient(cache: Cache? = null): OkHttpClient =
         .followRedirects(true)
         .followSslRedirects(true)
         .addInterceptor(ApachiyAddonAuthInterceptor())
+        .addInterceptor { chain ->
+            val request = chain.request()
+            if (request.header("User-Agent") != null) {
+                chain.proceed(request)
+            } else {
+                chain.proceed(
+                    request.newBuilder()
+                        .header(
+                            "User-Agent",
+                            "ApachiyMobile/${AppVersionConfig.VERSION_NAME.ifBlank { "dev" }}",
+                        )
+                        .build(),
+                )
+            }
+        }
         .addInterceptor(SentryNetworkBreadcrumbInterceptor())
         .proxy(Proxy.NO_PROXY)
         .apply {
