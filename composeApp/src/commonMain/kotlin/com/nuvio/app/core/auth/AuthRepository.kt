@@ -110,10 +110,10 @@ object AuthRepository {
         }
         Unit
     }.onFailure { e ->
+        if (e is CancellationException) throw e
         lastAuthKind = LastAuthKind.None
         log.e(e) { "Email sign-up failed" }
         _error.value = userFacingAuthError(e)
-            ?: getString(Res.string.auth_sign_up_failed)
     }
 
     suspend fun signInWithEmail(email: String, password: String): Result<Unit> = runCatching {
@@ -124,10 +124,10 @@ object AuthRepository {
             this.password = password
         }
     }.onFailure { e ->
+        if (e is CancellationException) throw e
         lastAuthKind = LastAuthKind.None
         log.e(e) { "Email sign-in failed" }
         _error.value = userFacingAuthError(e)
-            ?: getString(Res.string.auth_sign_in_failed)
     }
 
     suspend fun signOut(): Result<Unit> {
@@ -233,6 +233,10 @@ object AuthRepository {
 
     fun clearError() {
         _error.value = null
+    }
+
+    fun setError(message: String) {
+        _error.value = message
     }
 
     private fun isInvalidRemoteSessionError(error: Throwable): Boolean {

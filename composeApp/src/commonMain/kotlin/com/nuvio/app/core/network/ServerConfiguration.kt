@@ -49,15 +49,27 @@ object ServerConfigurationRepository {
 }
 
 internal fun officialConfiguration() = ServerConfiguration(
-    backendUrl = SupabaseConfig.URL.trim().trimEnd('/'),
+    backendUrl = normalizeOfficialBackendUrl(SupabaseConfig.URL),
     publishableKey = SupabaseConfig.ANON_KEY.trim(),
     capabilities = ServerCapabilities(
         emailPasswordAuth = true,
         tvLogin = true,
     ),
     isCustom = false,
-    fallbackBackendUrl = SupabaseConfig.FALLBACK_URL.trim().trimEnd('/').takeIf { it.isNotBlank() },
+    fallbackBackendUrl = normalizeOfficialBackendUrl(SupabaseConfig.FALLBACK_URL).takeIf { it.isNotBlank() },
 )
+
+internal fun normalizeOfficialBackendUrl(raw: String): String {
+    val trimmed = raw.trim().trimEnd('/')
+    if (trimmed.isBlank()) return ""
+    val hostAndPath = when {
+        trimmed.startsWith("https://", ignoreCase = true) ||
+            trimmed.startsWith("http://", ignoreCase = true) -> trimmed.substringAfter("://")
+        trimmed.contains("://") -> return trimmed
+        else -> trimmed
+    }
+    return "https://$hostAndPath"
+}
 
 internal fun isPublicServerHost(url: String): Boolean {
     val host = runCatching { io.ktor.http.Url(url).host.lowercase() }.getOrNull() ?: return true

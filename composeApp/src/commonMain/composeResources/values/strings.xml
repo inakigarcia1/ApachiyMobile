@@ -351,7 +351,7 @@
     <string name="compose_auth_link_failed">Link sign-in failed.</string>
     <string name="compose_auth_link_open">Open apachiy.org/link</string>
     <string name="compose_auth_link_open_failed">Couldn't open the link.</string>
-    <string name="compose_auth_link_sign_in">Sign In with Link</string>
+    <string name="compose_auth_link_sign_in">Sign in with a link</string>
     <string name="compose_auth_link_signing_in">Signing in…</string>
     <string name="compose_auth_link_try_again">Try Again</string>
     <string name="compose_auth_link_waiting">Waiting for approval…</string>
@@ -362,7 +362,7 @@
     <string name="compose_auth_sign_up_subtitle">Sign up to sync your data across devices</string>
     <string name="compose_auth_sign_up">Sign Up</string>
     <string name="compose_auth_store_locally">Your data will only be stored locally</string>
-    <string name="compose_auth_tagline">Watch your library, anywhere</string>
+    <string name="compose_auth_tagline">Streaming as it always should have been</string>
     <string name="compose_auth_terms_prefix">By signing up, I agree to the</string>
     <string name="compose_auth_terms_link">Terms</string>
     <string name="compose_auth_welcome_back">Welcome Back</string>

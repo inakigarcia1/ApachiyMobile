@@ -39,10 +39,16 @@ fun authErrorStringResource(error: Throwable): StringResource {
         message.contains("signup is disabled") -> Res.string.account_error_signup_disabled
         message.contains("rate limit") || message.contains("too many requests") ->
             Res.string.account_error_rate_limited
-        message.contains("unable to resolve host") || message.contains("no address associated") ->
+        message.contains("unable to resolve host") ||
+            message.contains("no address associated") ||
+            message.contains("unknownhost") ||
+            message.contains("failed to lookup") ->
             Res.string.account_error_no_internet
         message.contains("timeout") || message.contains("timed out") -> Res.string.account_error_connection_timeout
-        message.contains("connection refused") || message.contains("connect failed") ->
+        message.contains("connection refused") ||
+            message.contains("connect failed") ||
+            message.contains("failed to connect") ||
+            message.contains("cleartext") ->
             Res.string.account_error_connection_refused
         message.contains("not authenticated") -> Res.string.account_error_not_authenticated
         message.contains("404") || message.contains("could not find") -> Res.string.account_error_service_unavailable

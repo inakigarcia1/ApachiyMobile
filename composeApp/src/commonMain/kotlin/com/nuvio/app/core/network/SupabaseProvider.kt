@@ -10,6 +10,7 @@ import io.github.jan.supabase.postgrest.Postgrest
 import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.plugins.HttpRequestRetry
+import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.http.HttpHeaders
 import io.ktor.http.takeFrom
@@ -30,7 +31,15 @@ object SupabaseProvider {
             supabaseUrl = configuration.backendUrl,
             supabaseKey = configuration.publishableKey,
         ) {
+            createSupabaseHttpEngine()?.let { engine ->
+                httpEngine = engine
+            }
             httpConfig {
+                install(HttpTimeout) {
+                    requestTimeoutMillis = 20_000
+                    connectTimeoutMillis = 15_000
+                    socketTimeoutMillis = 20_000
+                }
                 install(BackendRateLimitPlugin) {
                     coordinator = rateLimitCoordinator
                 }

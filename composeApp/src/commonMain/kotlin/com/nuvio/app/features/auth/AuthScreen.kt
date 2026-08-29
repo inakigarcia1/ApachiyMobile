@@ -8,8 +8,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -60,16 +58,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.TextStyle
@@ -87,13 +79,20 @@ import com.nuvio.app.core.auth.AuthRepository
 import com.nuvio.app.core.auth.DeviceLinkAuthRepository
 import com.nuvio.app.core.auth.DeviceLinkAuthState
 import com.nuvio.app.core.build.AppFeaturePolicy
+import com.nuvio.app.core.network.ServerConfigurationRepository
 import com.nuvio.app.features.settings.AppBrandWordmark
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.PI
 import kotlin.math.sin
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.account_error_connection_timeout
+import nuvio.composeapp.generated.resources.account_error_invalid_email
+import nuvio.composeapp.generated.resources.account_error_password_too_short
+import nuvio.composeapp.generated.resources.account_error_service_unavailable
 import nuvio.composeapp.generated.resources.compose_auth_already_have_account
 import nuvio.composeapp.generated.resources.compose_auth_create_account
 import nuvio.composeapp.generated.resources.compose_auth_dont_have_account
@@ -113,16 +112,17 @@ import org.jetbrains.compose.resources.stringResource
 internal val AuthTextPrimary = Color(0xFFF5F7F8)
 internal val AuthTextSecondary = Color(0xFF969CA3)
 private val AuthTextMuted = Color(0xFF6E7178)
-private val AuthPrimaryButtonBackground = Color(0xFFF5F5F5)
-private val AuthPrimaryButtonText = Color(0xFF111111)
+private val AuthGold = Color(0xFFD4A574)
+private val AuthPrimaryButtonBackground = AuthGold
+private val AuthPrimaryButtonText = Color(0xFF0A0A0A)
 internal val AuthFieldBackground = Color.White.copy(alpha = 0.04f)
 private val AuthFieldBackgroundMobile = Color.White.copy(alpha = 0.035f)
-internal val AuthFieldBorder = Color.White.copy(alpha = 0.08f)
+internal val AuthFieldBorder = AuthGold.copy(alpha = 0.18f)
 private val AuthPaneBackground = Color.White.copy(alpha = 0.022f)
-private val AuthPaneBorder = Color.White.copy(alpha = 0.07f)
+private val AuthPaneBorder = AuthGold.copy(alpha = 0.22f)
 private val AuthDividerColor = Color.White.copy(alpha = 0.10f)
 private val AuthSecondaryButtonBackground = Color.White.copy(alpha = 0.05f)
-private val AuthSecondaryButtonBorder = Color.White.copy(alpha = 0.09f)
+private val AuthSecondaryButtonBorder = AuthGold.copy(alpha = 0.28f)
 
 private data class AuthFormMetrics(
     val fieldHeight: Dp,
@@ -195,21 +195,45 @@ fun AuthScreen(
     var email by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
-    var isLoading by rememberSaveable { mutableStateOf(false) }
-    var emailFieldBounds by remember { mutableStateOf<Rect?>(null) }
-    var passwordFieldBounds by remember { mutableStateOf<Rect?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
     var showServerSheet by rememberSaveable { mutableStateOf(false) }
     var showOfficialServerDialog by rememberSaveable { mutableStateOf(false) }
+    val invalidEmailMessage = stringResource(Res.string.account_error_invalid_email)
+    val passwordTooShortMessage = stringResource(Res.string.account_error_password_too_short)
+    val backendUnavailableMessage = stringResource(Res.string.account_error_service_unavailable)
+    val connectionTimeoutMessage = stringResource(Res.string.account_error_connection_timeout)
 
     fun submitAuth() {
-        if (email.isBlank() || password.length < 6 || isLoading) return
-        DeviceLinkAuthRepository.cancel()
-        isLoading = true
-        focusManager.clearFocus(force = true)
-        scope.launch {
-            if (isSignUp) AuthRepository.signUpWithEmail(email, password)
-            else AuthRepository.signInWithEmail(email, password)
-            isLoading = false
+        val trimmedEmail = email.trim()
+        val configuration = ServerConfigurationRepository.active.value
+        when {
+            isLoading -> return
+            configuration.backendUrl.isBlank() || configuration.publishableKey.isBlank() -> {
+                AuthRepository.setError(backendUnavailableMessage)
+            }
+            trimmedEmail.isBlank() || !trimmedEmail.contains('@') -> {
+                AuthRepository.setError(invalidEmailMessage)
+            }
+            password.length < 6 -> {
+                AuthRepository.setError(passwordTooShortMessage)
+            }
+            else -> {
+                DeviceLinkAuthRepository.cancel()
+                isLoading = true
+                focusManager.clearFocus(force = true)
+                scope.launch {
+                    try {
+                        withTimeout(25_000) {
+                            if (isSignUp) AuthRepository.signUpWithEmail(trimmedEmail, password)
+                            else AuthRepository.signInWithEmail(trimmedEmail, password)
+                        }
+                    } catch (_: TimeoutCancellationException) {
+                        AuthRepository.setError(connectionTimeoutMessage)
+                    } finally {
+                        isLoading = false
+                    }
+                }
+            }
         }
     }
 
@@ -242,20 +266,7 @@ fun AuthScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black)
-            .pointerInput(emailFieldBounds, passwordFieldBounds) {
-                awaitEachGesture {
-                    val down = awaitFirstDown(
-                        requireUnconsumed = false,
-                        pass = PointerEventPass.Initial,
-                    )
-                    val tappedTextField = listOfNotNull(emailFieldBounds, passwordFieldBounds)
-                        .any { bounds -> bounds.contains(down.position) }
-                    if (!tappedTextField) {
-                        focusManager.clearFocus(force = true)
-                    }
-                }
-            },
+            .background(Color.Black),
     ) {
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize(),
@@ -305,8 +316,6 @@ fun AuthScreen(
                         onContinueWithoutAccount = {},
                         onStartDeviceLink = ::startDeviceLink,
                         onCancelDeviceLink = DeviceLinkAuthRepository::cancel,
-                        onEmailBoundsChange = { emailFieldBounds = it },
-                        onPasswordBoundsChange = { passwordFieldBounds = it },
                     )
                 } else {
                     AuthMobileLayout(
@@ -333,8 +342,6 @@ fun AuthScreen(
                         onContinueWithoutAccount = {},
                         onStartDeviceLink = ::startDeviceLink,
                         onCancelDeviceLink = DeviceLinkAuthRepository::cancel,
-                        onEmailBoundsChange = { emailFieldBounds = it },
-                        onPasswordBoundsChange = { passwordFieldBounds = it },
                     )
                 }
             }
@@ -420,8 +427,6 @@ private fun AuthMobileLayout(
     onContinueWithoutAccount: () -> Unit,
     onStartDeviceLink: () -> Unit,
     onCancelDeviceLink: () -> Unit,
-    onEmailBoundsChange: (Rect) -> Unit,
-    onPasswordBoundsChange: (Rect) -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -481,8 +486,6 @@ private fun AuthMobileLayout(
                 onContinueWithoutAccount = onContinueWithoutAccount,
                 onStartDeviceLink = onStartDeviceLink,
                 onCancelDeviceLink = onCancelDeviceLink,
-                onEmailBoundsChange = onEmailBoundsChange,
-                onPasswordBoundsChange = onPasswordBoundsChange,
             )
         }
     }
@@ -512,8 +515,6 @@ private fun AuthLargeLayout(
     onContinueWithoutAccount: () -> Unit,
     onStartDeviceLink: () -> Unit,
     onCancelDeviceLink: () -> Unit,
-    onEmailBoundsChange: (Rect) -> Unit,
-    onPasswordBoundsChange: (Rect) -> Unit,
 ) {
     Row(
         modifier = modifier,
@@ -611,8 +612,6 @@ private fun AuthLargeLayout(
                     onContinueWithoutAccount = onContinueWithoutAccount,
                     onStartDeviceLink = onStartDeviceLink,
                     onCancelDeviceLink = onCancelDeviceLink,
-                    onEmailBoundsChange = onEmailBoundsChange,
-                    onPasswordBoundsChange = onPasswordBoundsChange,
                 )
             }
         }
@@ -700,8 +699,6 @@ private fun AuthForm(
     onContinueWithoutAccount: () -> Unit,
     onStartDeviceLink: () -> Unit,
     onCancelDeviceLink: () -> Unit,
-    onEmailBoundsChange: (Rect) -> Unit,
-    onPasswordBoundsChange: (Rect) -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
     Column(
@@ -714,9 +711,6 @@ private fun AuthForm(
             icon = Icons.Rounded.Email,
             metrics = metrics,
             scale = scale,
-            modifier = Modifier.onGloballyPositioned { coordinates ->
-                onEmailBoundsChange(coordinates.boundsInRoot())
-            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Email,
                 imeAction = ImeAction.Next,
@@ -735,9 +729,6 @@ private fun AuthForm(
             isPassword = true,
             passwordVisible = passwordVisible,
             onPasswordVisibilityToggle = onPasswordVisibilityToggle,
-            modifier = Modifier.onGloballyPositioned { coordinates ->
-                onPasswordBoundsChange(coordinates.boundsInRoot())
-            },
             keyboardOptions = KeyboardOptions(
                 keyboardType = KeyboardType.Password,
                 imeAction = ImeAction.Done,
@@ -1119,24 +1110,22 @@ private fun Modifier.authGradientBackground(largeScreen: Boolean): Modifier = dr
     )
     val colorStops = if (largeScreen) {
         arrayOf(
-            0f to Color(0xFF21113B),
-            0.14f to Color(0xFF21113B),
-            0.26f to Color(0xFF1A0E2F),
-            0.36f to Color(0xFF130A23),
-            0.48f to Color(0xFF0A060F),
-            0.60f to Color(0xFF050408),
-            0.70f to Color.Black,
+            0f to Color(0xFF181714),
+            0.18f to Color(0xFF131211),
+            0.34f to Color(0xFF0F0E0C),
+            0.50f to Color(0xFF0A0A0A),
+            0.68f to Color(0xFF070605),
+            0.84f to Color(0xFF040302),
             1f to Color.Black,
         )
     } else {
         arrayOf(
-            0f to Color(0xFF21113B),
-            0.12f to Color(0xFF21113B),
-            0.24f to Color(0xFF1A0E2F),
-            0.34f to Color(0xFF130A23),
-            0.44f to Color(0xFF0A060F),
-            0.58f to Color(0xFF050408),
-            0.64f to Color.Black,
+            0f to Color(0xFF181714),
+            0.16f to Color(0xFF131211),
+            0.32f to Color(0xFF0F0E0C),
+            0.48f to Color(0xFF0A0A0A),
+            0.66f to Color(0xFF070605),
+            0.82f to Color(0xFF040302),
             1f to Color.Black,
         )
     }
@@ -1148,14 +1137,4 @@ private fun Modifier.authGradientBackground(largeScreen: Boolean): Modifier = dr
     onDrawBehind {
         drawRect(brush = brush)
     }
-}
-
-private fun LayoutCoordinates.boundsInRoot(): Rect {
-    val position = positionInRoot()
-    return Rect(
-        left = position.x,
-        top = position.y,
-        right = position.x + size.width,
-        bottom = position.y + size.height,
-    )
 }
