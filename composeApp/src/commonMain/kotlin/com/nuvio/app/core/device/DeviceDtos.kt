@@ -5,12 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class DeviceRegistrationRequest(
-    @SerialName("installation_id") val installationId: String,
+    @SerialName("installationId") val installationId: String,
     @SerialName("platform") val platform: String,
     @SerialName("app") val app: String = "apachiy",
-    @SerialName("app_version") val appVersion: String,
-    @SerialName("os_version") val osVersion: String? = null,
-    @SerialName("device_model") val deviceModel: String? = null,
+    @SerialName("appVersion") val appVersion: String,
+    @SerialName("osVersion") val osVersion: String? = null,
+    @SerialName("deviceModel") val deviceModel: String? = null,
 )
 
 @Serializable

@@ -102,6 +102,10 @@ object MemberAccessRepository {
             } catch (error: CancellationException) {
                 throw error
             } catch (error: Exception) {
+                if (error.isMissingMemberAccessFunction()) {
+                    log.d { "Supporter RPC is not available on this backend" }
+                    return MemberAccess.None
+                }
                 if (attempt == RetryDelaysMs.size) {
                     log.w(error) { "Unable to verify supporter access; retaining cached access" }
                     return null
@@ -159,6 +163,20 @@ object MemberAccessRepository {
         )
         return remote
     }
+}
+
+private fun Throwable.isMissingMemberAccessFunction(): Boolean {
+    val message = buildString {
+        append(this@isMissingMemberAccessFunction.message.orEmpty())
+        var cause = this@isMissingMemberAccessFunction.cause
+        while (cause != null) {
+            append(' ')
+            append(cause.message.orEmpty())
+            cause = cause.cause
+        }
+    }.lowercase()
+    return message.contains("pgrst202") ||
+        (message.contains("get_my_member_access") && message.contains("could not find"))
 }
 
 @Serializable

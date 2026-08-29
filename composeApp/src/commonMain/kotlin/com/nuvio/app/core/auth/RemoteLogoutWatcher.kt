@@ -115,6 +115,7 @@ object RemoteLogoutWatcher {
 
     private suspend fun stillRegisteredOnApi(installationId: String): Boolean {
         if (ApachiyConfig.API_BASE_URL.isBlank()) return true
+        if (SyncClientIdentity.loadRegisteredDeviceId() == null) return true
         val token = runCatching {
             SupabaseProvider.client.auth.currentAccessTokenOrNull()
         }.getOrNull() ?: return true

@@ -163,7 +163,7 @@ object DeviceRegistrar {
     internal fun buildRequest(
         metadata: com.nuvio.app.core.auth.DeviceClientMetadata = currentDeviceClientMetadata(),
         installationId: String = SyncClientIdentity.currentClientId(),
-        appVersion: String = AppVersionConfig.VERSION_NAME,
+        appVersion: String = AppVersionConfig.VERSION_NAME.ifBlank { "dev" },
     ): DeviceRegistrationRequest {
         val deviceModel = metadata.deviceName.take(MAX_DEVICE_NAME_LENGTH)
         return DeviceRegistrationRequest(

@@ -446,9 +446,9 @@ private fun AuthMobileLayout(
                 .fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            AuthBrandLockup(logoHeight = 38.dp)
+            AuthBrandLockup(logoHeight = 72.dp)
 
-            Spacer(modifier = Modifier.height(64.dp))
+            Spacer(modifier = Modifier.height(40.dp))
 
             AuthHeading(
                 isSignUp = isSignUp,
@@ -623,20 +623,23 @@ private fun AuthBrandLockup(
     logoHeight: Dp,
 ) {
     Column(
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         AppBrandWordmark(
             contentDescription = null,
-            modifier = Modifier.height(logoHeight),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(logoHeight),
         )
-        Spacer(modifier = Modifier.height(14.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         Text(
             text = stringResource(Res.string.compose_auth_tagline),
-            style = MaterialTheme.typography.bodyMedium.copy(
+            style = MaterialTheme.typography.bodyLarge.copy(
                 color = AuthTextSecondary,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
-                fontWeight = FontWeight.Normal,
+                fontSize = 18.sp,
+                lineHeight = 24.sp,
+                fontWeight = FontWeight.Medium,
             ),
         )
     }

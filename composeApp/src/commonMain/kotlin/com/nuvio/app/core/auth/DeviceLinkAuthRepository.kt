@@ -76,8 +76,8 @@ object DeviceLinkAuthRepository {
                     deviceName = currentDeviceClientMetadata().deviceName,
                 )
                 _state.value = DeviceLinkAuthState.Waiting(
-                    code = formatDeviceLinkCode(session.userCode),
-                    verificationUrl = session.verificationUriComplete,
+                    code = formatDeviceLinkCode(session.code),
+                    verificationUrl = session.webUrl,
                 )
                 pollAndComplete(session, nonce)
             } catch (error: CancellationException) {
@@ -107,17 +107,12 @@ object DeviceLinkAuthRepository {
             put("p_device_nonce", nonce)
             put("p_redirect_base_url", configuration.deviceLinkUrl())
             put("p_device_name", deviceName)
-            put("p_device_type", "mobile")
         }
         return SupabaseProvider.client.postgrest
-            .rpc("start_device_login_session", params)
+            .rpc("start_tv_login_session", params)
             .decodeList<DeviceLinkStartResponse>()
             .firstOrNull()
-            ?.takeIf {
-                it.deviceCode.isNotBlank() &&
-                    it.userCode.isNotBlank() &&
-                    it.verificationUriComplete.isNotBlank()
-            }
+            ?.takeIf { it.code.isNotBlank() && it.webUrl.isNotBlank() }
             ?: throw DeviceLinkAuthException(DeviceLinkAuthFailure.Start)
     }
 
@@ -131,7 +126,7 @@ object DeviceLinkAuthRepository {
             pollAttempts += 1
             val poll = try {
                 val params = buildJsonObject {
-                    put("p_code", session.deviceCode)
+                    put("p_code", session.code)
                     put("p_device_nonce", nonce)
                 }
                 SupabaseProvider.client.postgrest
@@ -152,13 +147,15 @@ object DeviceLinkAuthRepository {
                 "pending" -> Unit
                 "approved" -> {
                     _state.value = DeviceLinkAuthState.Waiting(
-                        code = formatDeviceLinkCode(session.userCode),
-                        verificationUrl = session.verificationUriComplete,
+                        code = formatDeviceLinkCode(session.code),
+                        verificationUrl = session.webUrl,
                         isCompleting = true,
                     )
-                    completeSession(session.deviceCode, nonce)
+                    completeSession(session.code, nonce)
                     return
                 }
+                "expired", "not_found", "consumed" ->
+                    throw DeviceLinkAuthException(DeviceLinkAuthFailure.Expired)
                 else -> throw DeviceLinkAuthException(DeviceLinkAuthFailure.Expired)
             }
         }
@@ -203,9 +200,9 @@ internal fun formatDeviceLinkCode(value: String): String {
 
 @Serializable
 private data class DeviceLinkStartResponse(
-    @SerialName("device_code") val deviceCode: String,
-    @SerialName("user_code") val userCode: String,
-    @SerialName("verification_uri_complete") val verificationUriComplete: String,
+    val code: String,
+    @SerialName("web_url") val webUrl: String,
+    @SerialName("expires_at") val expiresAt: String? = null,
     @SerialName("poll_interval_seconds") val pollIntervalSeconds: Int = 3,
 )
 

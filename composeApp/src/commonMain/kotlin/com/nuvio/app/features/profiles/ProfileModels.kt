@@ -1,14 +1,38 @@
 package com.nuvio.app.features.profiles
 
 import androidx.compose.ui.graphics.Color
+import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.JsonDecoder
+import kotlinx.serialization.json.JsonPrimitive
 
 const val MAX_PROFILES = 6
 
+internal object JsonPrimitiveAsStringSerializer : KSerializer<String> {
+    override val descriptor: SerialDescriptor =
+        PrimitiveSerialDescriptor("JsonPrimitiveAsString", PrimitiveKind.STRING)
+
+    override fun serialize(encoder: Encoder, value: String) {
+        encoder.encodeString(value)
+    }
+
+    override fun deserialize(decoder: Decoder): String {
+        val jsonDecoder = decoder as? JsonDecoder ?: return decoder.decodeString()
+        val primitive = jsonDecoder.decodeJsonElement() as? JsonPrimitive ?: return ""
+        return primitive.content
+    }
+}
+
 @Serializable
 data class NuvioProfile(
+    @Serializable(with = JsonPrimitiveAsStringSerializer::class)
     val id: String = "",
     @SerialName("user_id") val userId: String = "",
     @SerialName("profile_index") val profileIndex: Int = 1,
