@@ -196,12 +196,15 @@ internal fun StreamDestination(
             torrentFileIdx = stream.p2pFileIdx,
             torrentFilename = stream.behaviorHints.filename,
             torrentTrackers = stream.p2pTrackers,
+            videoHash = stream.behaviorHints.videoHash,
+            videoSize = stream.behaviorHints.videoSize,
             initialPositionMs = resolvedResumePositionMs ?: 0L,
             initialProgressFraction = resolvedResumeProgressFraction,
         )
 
         val launchId = PlayerLaunchStore.put(playerLaunch)
         StreamsRepository.cancelLoading()
+        if (!allowPlaybackOrNotify()) return
         navController.navigate(PlayerRoute(launchId = launchId, title = playerLaunch.title)) {
             if (replaceStreamRoute) {
                 popUpTo<StreamRoute> { inclusive = true }
@@ -318,6 +321,7 @@ internal fun StreamDestination(
                 contentLanguage = cached.contentLanguage,
             )
             if (playerSettings.externalPlayerEnabled) {
+                if (!allowPlaybackOrNotify()) return@LaunchedEffect
                 openExternalPlayback(playerLaunch)
                 StreamsRepository.setOverlayVisible(false)
                 reuseNavigated = true
@@ -326,6 +330,7 @@ internal fun StreamDestination(
             StreamsRepository.clear()
             reuseNavigated = true
             val launchId = PlayerLaunchStore.put(playerLaunch)
+            if (!allowPlaybackOrNotify()) return@LaunchedEffect
             navController.navigate(PlayerRoute(launchId = launchId, title = playerLaunch.title)) {
                 popUpTo<StreamRoute> { inclusive = true }
             }
@@ -450,10 +455,13 @@ internal fun StreamDestination(
             videoId = effectiveVideoId,
             parentMetaId = launch.parentMetaId ?: effectiveVideoId,
             parentMetaType = launch.parentMetaType ?: launch.type,
+            videoHash = stream.behaviorHints.videoHash,
+            videoSize = stream.behaviorHints.videoSize,
             initialPositionMs = launch.resumePositionMs ?: 0L,
             initialProgressFraction = launch.resumeProgressFraction,
         )
         if (playerSettings.externalPlayerEnabled) {
+            if (!allowPlaybackOrNotify()) return@LaunchedEffect
             openExternalPlayback(playerLaunch)
             StreamsRepository.consumeAutoPlay()
             StreamsRepository.cancelLoading()
@@ -462,6 +470,7 @@ internal fun StreamDestination(
         StreamsRepository.consumeAutoPlay()
         StreamsRepository.cancelLoading()
         val launchId = PlayerLaunchStore.put(playerLaunch)
+        if (!allowPlaybackOrNotify()) return@LaunchedEffect
         navController.navigate(PlayerRoute(launchId = launchId, title = playerLaunch.title)) {
             popUpTo<StreamRoute> { inclusive = true }
         }
@@ -585,11 +594,14 @@ internal fun StreamDestination(
             videoId = effectiveVideoId,
             parentMetaId = launch.parentMetaId ?: effectiveVideoId,
             parentMetaType = launch.parentMetaType ?: launch.type,
+            videoHash = stream.behaviorHints.videoHash,
+            videoSize = stream.behaviorHints.videoSize,
             initialPositionMs = resolvedResumePositionMs ?: 0L,
             initialProgressFraction = resolvedResumeProgressFraction,
         )
 
         if (!forceInternal && (forceExternal || playerSettings.externalPlayerEnabled)) {
+            if (!allowPlaybackOrNotify()) return
             streamRouteScope.launch {
                 openExternalPlayback(playerLaunch)
                 StreamsRepository.cancelLoading()
@@ -599,6 +611,7 @@ internal fun StreamDestination(
 
         val launchId = PlayerLaunchStore.put(playerLaunch)
         StreamsRepository.cancelLoading()
+        if (!allowPlaybackOrNotify()) return
         navController.navigate(
             PlayerRoute(launchId = launchId, title = playerLaunch.title)
         )

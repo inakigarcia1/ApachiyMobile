@@ -40,10 +40,21 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
     @get:Input
     abstract val sentryEnvironment: Property<String>
 
+    @get:Input
+    abstract val apachiyApiBaseUrl: Property<String>
+
+    @get:Input
+    abstract val avatarPublicBaseUrl: Property<String>
+
     @TaskAction
     fun generate() {
         val props = Properties()
         localPropertiesFile.asFile.orNull?.takeIf { it.exists() }?.inputStream()?.use { props.load(it) }
+
+        val resolvedAvatarPublicBaseUrl = avatarPublicBaseUrl.get().trim().ifBlank {
+            val supabase = supabaseUrl.get().trim().trimEnd('/')
+            if (supabase.isNotBlank()) "$supabase/storage/v1/object/public/avatars" else ""
+        }
 
         val outDir = outputDir.get().asFile
         outDir.resolve("com/nuvio/app/core/network").apply {
@@ -56,6 +67,16 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |    const val URL = "${supabaseUrl.get()}"
                 |    const val ANON_KEY = "${supabaseAnonKey.get()}"
                 |    const val FALLBACK_URL = "${supabaseFallbackUrl.get()}"
+                |}
+                """.trimMargin()
+            )
+            resolve("ApachiyConfig.kt").writeText(
+                """
+                |package com.nuvio.app.core.network
+                |
+                |object ApachiyConfig {
+                |    const val API_BASE_URL = "${apachiyApiBaseUrl.get()}"
+                |    const val AVATAR_PUBLIC_BASE_URL = "$resolvedAvatarPublicBaseUrl"
                 |}
                 """.trimMargin()
             )
@@ -86,7 +107,7 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |object TraktConfig {
                 |    const val CLIENT_ID = "${props.getProperty("TRAKT_CLIENT_ID", "")}" 
                 |    const val CLIENT_SECRET = "${props.getProperty("TRAKT_CLIENT_SECRET", "")}" 
-                |    const val REDIRECT_URI = "${props.getProperty("TRAKT_REDIRECT_URI", "nuvio://auth/trakt")}" 
+                |    const val REDIRECT_URI = "${props.getProperty("TRAKT_REDIRECT_URI", "apachiy://auth/trakt")}" 
                 |}
                 """.trimMargin()
             )
@@ -100,8 +121,8 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |
                 |object SimklConfig {
                 |    const val CLIENT_ID = "${props.getProperty("SIMKL_CLIENT_ID", "")}"
-                |    const val REDIRECT_URI = "${props.getProperty("SIMKL_REDIRECT_URI", "nuvio://auth/simkl")}"
-                |    const val APP_NAME = "${props.getProperty("SIMKL_APP_NAME", "nuvio")}"
+                |    const val REDIRECT_URI = "${props.getProperty("SIMKL_REDIRECT_URI", "apachiy://auth/simkl")}"
+                |    const val APP_NAME = "${props.getProperty("SIMKL_APP_NAME", "apachiy")}"
                 |}
                 """.trimMargin()
             )
@@ -169,7 +190,7 @@ abstract class GenerateRuntimeConfigsTask : DefaultTask() {
                 |
                 |object CommunityConfig {
                 |    const val CONTRIBUTIONS_URL = "${props.getProperty("CONTRIBUTIONS_URL", "")}" 
-                |    const val SUPPORTERS_WALL_URL = "${props.getProperty("SUPPORTERS_WALL_URL", "https://nuvio.tv/api/supporters/wall")}"
+                |    const val SUPPORTERS_WALL_URL = "${props.getProperty("SUPPORTERS_WALL_URL", "")}"
                 |    const val DONATIONS_BASE_URL = "${props.getProperty("DONATIONS_BASE_URL", "")}" 
                 |    const val DONATIONS_DONATE_URL = "${props.getProperty("DONATIONS_DONATE_URL", "")}" 
                 |}
@@ -289,8 +310,8 @@ val generateRuntimeConfigs = tasks.register<GenerateRuntimeConfigsTask>("generat
     localPropertiesFile.set(rootProject.layout.projectDirectory.file("local.properties"))
     appVersionName.set(releaseAppVersionName)
     appVersionCode.set(releaseAppVersionCode)
-    supabaseUrl.set(runtimeConfigValue("NUVIO_SUPABASE_URL"))
-    supabaseAnonKey.set(runtimeConfigValue("NUVIO_SUPABASE_ANON_KEY"))
+    supabaseUrl.set(runtimeConfigValue("APACHIY_SUPABASE_URL"))
+    supabaseAnonKey.set(runtimeConfigValue("APACHIY_SUPABASE_ANON_KEY"))
     supabaseFallbackUrl.set(runtimeConfigValue("NUVIO_SUPABASE_FALLBACK_URL"))
     sentryDsn.set(runtimeConfigValue("SENTRY_DSN"))
     sentryEnvironment.set(
@@ -300,6 +321,8 @@ val generateRuntimeConfigs = tasks.register<GenerateRuntimeConfigsTask>("generat
             else -> "production"
         }
     )
+    apachiyApiBaseUrl.set(runtimeConfigValue("APACHIY_API_BASE_URL"))
+    avatarPublicBaseUrl.set(runtimeConfigValue("AVATAR_PUBLIC_BASE_URL"))
 }
 
 tasks.withType<KotlinCompilationTask<*>>().configureEach {
@@ -469,6 +492,7 @@ kotlin {
             implementation(libs.supabase.auth)
             implementation(libs.supabase.functions)
             implementation(libs.supabase.storage)
+            implementation(libs.supabase.realtime)
             implementation(libs.reorderable)
         }
         commonTest.dependencies {

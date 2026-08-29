@@ -211,7 +211,7 @@ object ProfileRepository {
         avatarColorHex: String,
         avatarId: String? = null,
         avatarUrl: String? = null,
-        usesPrimaryAddons: Boolean = false,
+        usesPrimaryAddons: Boolean = true,
     ) {
         val existing = _state.value.profiles
         val nextIndex = ((1..MAX_PROFILES).toSet() - existing.map { it.profileIndex }.toSet()).minOrNull() ?: return
@@ -221,7 +221,7 @@ object ProfileRepository {
                 profileIndex = profile.profileIndex,
                 name = profile.name,
                 avatarColorHex = profile.avatarColorHex,
-                usesPrimaryAddons = profile.usesPrimaryAddons,
+                usesPrimaryAddons = true,
                 usesPrimaryPlugins = profile.usesPrimaryPlugins,
                 avatarId = profile.avatarId,
                 avatarUrl = profile.avatarUrl,
@@ -232,7 +232,7 @@ object ProfileRepository {
             profileIndex = nextIndex,
             name = name,
             avatarColorHex = avatarColorHex,
-            usesPrimaryAddons = usesPrimaryAddons,
+            usesPrimaryAddons = true,
             avatarId = avatarId,
             avatarUrl = avatarUrl,
         )
@@ -248,7 +248,7 @@ object ProfileRepository {
         avatarUrl: String? = null,
         profileBackgroundId: String? = null,
         profileBackgroundUrl: String? = null,
-        usesPrimaryAddons: Boolean = false,
+        usesPrimaryAddons: Boolean = true,
     ) {
         val allPayloads = _state.value.profiles.map { profile ->
             if (profile.profileIndex == profileIndex) {
@@ -256,7 +256,7 @@ object ProfileRepository {
                     profileIndex = profileIndex,
                     name = name,
                     avatarColorHex = avatarColorHex,
-                    usesPrimaryAddons = usesPrimaryAddons,
+                    usesPrimaryAddons = true,
                     avatarId = avatarId,
                     avatarUrl = avatarUrl,
                     profileBackgroundId = profileBackgroundId,
@@ -267,7 +267,7 @@ object ProfileRepository {
                     profileIndex = profile.profileIndex,
                     name = profile.name,
                     avatarColorHex = profile.avatarColorHex,
-                    usesPrimaryAddons = profile.usesPrimaryAddons,
+                    usesPrimaryAddons = true,
                     usesPrimaryPlugins = profile.usesPrimaryPlugins,
                     avatarId = profile.avatarId,
                     avatarUrl = profile.avatarUrl,
@@ -410,7 +410,7 @@ object ProfileRepository {
                 avatarUrl = p.avatarUrl,
                 profileBackgroundId = p.profileBackgroundId,
                 profileBackgroundUrl = p.profileBackgroundUrl,
-                usesPrimaryAddons = p.usesPrimaryAddons,
+                usesPrimaryAddons = true,
                 usesPrimaryPlugins = p.usesPrimaryPlugins,
             )
         }.sortedBy { it.profileIndex }

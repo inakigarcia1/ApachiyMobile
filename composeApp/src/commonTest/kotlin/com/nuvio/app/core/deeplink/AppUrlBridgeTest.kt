@@ -12,6 +12,10 @@ class AppUrlBridgeTest {
             AppDeepLink.Meta(type = "series", id = "tt0944947"),
             parseAppDeepLink("nuvio://meta?type=series&id=tt0944947"),
         )
+        assertEquals(
+            AppDeepLink.Meta(type = "series", id = "tt0944947"),
+            parseAppDeepLink("apachiy://meta?type=series&id=tt0944947"),
+        )
     }
 
     @Test
@@ -57,6 +61,7 @@ class AppUrlBridgeTest {
     @Test
     fun `does not treat reserved auth link as addon install`() {
         assertNull(parseAppDeepLink("nuvio://auth/trakt?code=abc"))
+        assertNull(parseAppDeepLink("apachiy://auth/trakt?code=abc"))
     }
 
     @Test

@@ -15,5 +15,7 @@ internal actual fun currentDeviceClientMetadata(): DeviceClientMetadata {
     return DeviceClientMetadata(
         deviceName = deviceName,
         platform = "Android $osVersion",
+        osVersion = osVersion,
+        apiPlatform = "android",
     )
 }

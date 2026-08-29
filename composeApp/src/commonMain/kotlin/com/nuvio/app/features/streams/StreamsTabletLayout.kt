@@ -194,9 +194,6 @@ internal fun TabletStreamsLayout(
                         }
 
                         ProviderFilterRow(
-                            groups = uiState.groups,
-                            selectedFilter = uiState.selectedFilter,
-                            onFilterSelected = { addonId -> StreamsRepository.selectFilter(addonId) },
                             onRefresh = onRefresh,
                         )
 

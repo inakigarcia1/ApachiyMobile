@@ -41,6 +41,8 @@ fun PlayerScreen(
     initialPositionMs: Long = 0L,
     initialProgressFraction: Float? = null,
     contentLanguage: String? = null,
+    videoHash: String? = null,
+    videoSize: Long? = null,
 ) {
     PlayerScreenContent(
         PlayerScreenArgs(
@@ -80,6 +82,8 @@ fun PlayerScreen(
             initialPositionMs = initialPositionMs,
             initialProgressFraction = initialProgressFraction,
             contentLanguage = contentLanguage,
+            videoHash = videoHash,
+            videoSize = videoSize,
         )
     )
 }

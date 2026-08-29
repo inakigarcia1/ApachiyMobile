@@ -1,5 +1,6 @@
 package com.nuvio.app.features.settings
 
+import com.nuvio.app.core.build.ApachiyProductSettings
 import com.nuvio.app.core.build.AppFeaturePolicy
 
 import androidx.compose.foundation.background
@@ -96,11 +97,25 @@ private val SettingsSearchRevealThreshold = 28.dp
 private const val SettingsSearchRevealAnimationMillis = 240L
 private const val SettingsSearchRevealHapticDelayMillis = 90L
 
-private fun SettingsPage.isEnabledByPolicy(): Boolean =
-    when (this) {
-        SettingsPage.SupportersContributors -> AppFeaturePolicy.supportersContributorsPageEnabled
+private fun SettingsPage.isEnabledByPolicy(): Boolean {
+    val operatorVisible = ApachiyProductSettings.operatorSettingsVisible
+    return when (this) {
+        SettingsPage.SupportersContributors ->
+            operatorVisible && AppFeaturePolicy.supportersContributorsPageEnabled
+        SettingsPage.Advanced,
+        SettingsPage.Integrations,
+        SettingsPage.TmdbEnrichment,
+        SettingsPage.MdbListRatings,
+        SettingsPage.Debrid,
+        SettingsPage.Plugins,
+        SettingsPage.ContentDiscovery,
+        SettingsPage.Addons,
+        SettingsPage.TraktAuthentication,
+        SettingsPage.LicensesAttributions,
+        -> operatorVisible
         else -> true
     }
+}
 
 @Composable
 private fun settingsPageTitles(): Map<SettingsPage, String> {
@@ -136,6 +151,7 @@ fun SettingsScreen(
     onTestUpdateBannerClick: (() -> Unit)? = null,
     onCollectionsClick: () -> Unit = {},
 ) {
+    val operatorVisible = ApachiyProductSettings.operatorSettingsVisible
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
     ) {
@@ -579,6 +595,7 @@ private fun MobileSettingsScreen(
     onTestUpdateBannerClick: (() -> Unit)? = null,
     onCollectionsClick: () -> Unit = {},
 ) {
+    val operatorVisible = ApachiyProductSettings.operatorSettingsVisible
     val saveableStateHolder = rememberSaveableStateHolder()
     saveableStateHolder.SaveableStateProvider(page.name) {
         var settingsSearchQuery by rememberSaveable { mutableStateOf("") }
@@ -695,7 +712,13 @@ private fun MobileSettingsScreen(
                             onDownloadsClick = onDownloadsClick,
                             onAccountClick = onAccountClick,
                             onSwitchProfileClick = onSwitchProfile,
-                            showSupportersContributorsPage = AppFeaturePolicy.supportersContributorsPageEnabled,
+                            showAboutSection = operatorVisible,
+                            showAdvancedSection = operatorVisible,
+                            showSupportersContributorsPage = operatorVisible &&
+                                AppFeaturePolicy.supportersContributorsPageEnabled,
+                            showContentDiscovery = operatorVisible,
+                            showIntegrations = operatorVisible,
+                            showTracking = operatorVisible,
                         )
                     }
                 }
@@ -937,6 +960,7 @@ private fun TabletSettingsScreen(
     onTestUpdateBannerClick: (() -> Unit)? = null,
     onCollectionsClick: () -> Unit = {},
 ) {
+    val operatorVisible = ApachiyProductSettings.operatorSettingsVisible
     var selectedCategory by rememberSaveable { mutableStateOf(SettingsCategory.General.name) }
     val activeCategory = SettingsCategory.valueOf(selectedCategory)
     val statusBarPadding = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
@@ -980,7 +1004,16 @@ private fun TabletSettingsScreen(
                 HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
 
                 Spacer(modifier = Modifier.height(10.dp))
-                SettingsCategory.entries.forEach { category ->
+                SettingsCategory.entries
+                    .filter { category ->
+                        when (category) {
+                            SettingsCategory.About,
+                            SettingsCategory.Advanced,
+                            -> operatorVisible
+                            else -> true
+                        }
+                    }
+                    .forEach { category ->
                     SettingsSidebarItem(
                         label = stringResource(category.labelRes),
                         icon = category.icon,
@@ -1113,9 +1146,13 @@ private fun TabletSettingsScreen(
                                 onSwitchProfileClick = onSwitchProfile,
                                 showAccountSection = activeCategory == SettingsCategory.Account,
                                 showGeneralSection = activeCategory == SettingsCategory.General,
-                                showAboutSection = activeCategory == SettingsCategory.About,
-                                showAdvancedSection = activeCategory == SettingsCategory.Advanced,
-                                showSupportersContributorsPage = AppFeaturePolicy.supportersContributorsPageEnabled,
+                                showAboutSection = operatorVisible && activeCategory == SettingsCategory.About,
+                                showAdvancedSection = operatorVisible && activeCategory == SettingsCategory.Advanced,
+                                showSupportersContributorsPage = operatorVisible &&
+                                    AppFeaturePolicy.supportersContributorsPageEnabled,
+                                showContentDiscovery = operatorVisible,
+                                showIntegrations = operatorVisible,
+                                showTracking = operatorVisible,
                             )
                         }
                     }

@@ -2,12 +2,14 @@ package com.nuvio.app.core.sync
 
 import kotlinx.serialization.json.JsonObjectBuilder
 import kotlinx.serialization.json.put
-import kotlin.random.Random
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
-private const val CLIENT_ID_LENGTH = 32
-private const val CLIENT_ID_PREFIX = "nuvio-mobile-"
+private val UUID_V4_REGEX = Regex(
+    "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+    RegexOption.IGNORE_CASE,
+)
 private const val ORIGIN_CLIENT_ID_PARAM = "p_origin_client_id"
-private const val CLIENT_ID_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789"
 
 object SyncClientIdentity {
     private var cachedClientId: String? = null
@@ -17,7 +19,7 @@ object SyncClientIdentity {
 
         val stored = SyncClientIdentityStorage.loadClientId()
             ?.trim()
-            ?.takeIf { it.isValidSyncClientId() }
+            ?.takeIf(::isValidUuidV4)
         if (stored != null) {
             cachedClientId = stored
             return stored
@@ -29,15 +31,21 @@ object SyncClientIdentity {
         return generated
     }
 
-    private fun generateClientId(): String =
-        CLIENT_ID_PREFIX + buildString(CLIENT_ID_LENGTH) {
-            repeat(CLIENT_ID_LENGTH) {
-                append(CLIENT_ID_ALPHABET[Random.nextInt(CLIENT_ID_ALPHABET.length)])
-            }
-        }
+    fun saveRegisteredDeviceId(deviceId: Long) {
+        SyncClientIdentityStorage.saveRegisteredDeviceId(deviceId)
+    }
 
-    private fun String.isValidSyncClientId(): Boolean =
-        length in 16..96 && all { it.isLetterOrDigit() || it == '-' || it == '_' }
+    fun loadRegisteredDeviceId(): Long? =
+        SyncClientIdentityStorage.loadRegisteredDeviceId()
+
+    fun clearRegisteredDeviceId() {
+        SyncClientIdentityStorage.clearRegisteredDeviceId()
+    }
+
+    @OptIn(ExperimentalUuidApi::class)
+    internal fun generateClientId(): String = Uuid.random().toString()
+
+    internal fun isValidUuidV4(value: String): Boolean = UUID_V4_REGEX.matches(value)
 }
 
 internal fun JsonObjectBuilder.putSyncOriginClientId() {
@@ -47,4 +55,7 @@ internal fun JsonObjectBuilder.putSyncOriginClientId() {
 internal expect object SyncClientIdentityStorage {
     fun loadClientId(): String?
     fun saveClientId(clientId: String)
+    fun loadRegisteredDeviceId(): Long?
+    fun saveRegisteredDeviceId(deviceId: Long)
+    fun clearRegisteredDeviceId()
 }

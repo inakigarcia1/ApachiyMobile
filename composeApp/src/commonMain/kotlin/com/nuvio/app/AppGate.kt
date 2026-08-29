@@ -22,9 +22,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.nuvio.app.core.account.AccountStatusRepository
 import com.nuvio.app.core.auth.AuthRepository
 import com.nuvio.app.core.auth.AuthState
 import com.nuvio.app.core.auth.DeviceSessionRegistration
+import com.nuvio.app.core.auth.RemoteLogoutWatcher
+import com.nuvio.app.core.device.DeviceRegistrar
 import com.nuvio.app.core.network.NetworkCondition
 import com.nuvio.app.core.network.NetworkStatusRepository
 import com.nuvio.app.core.sync.SyncManager
@@ -101,6 +104,9 @@ internal fun AppGate(
     LaunchedEffect(Unit) {
         if (!ownsAppRuntime) return@LaunchedEffect
         AuthRepository.initialize()
+        DeviceRegistrar.startObserving()
+        AccountStatusRepository.startObserving()
+        RemoteLogoutWatcher.startObserving()
     }
 
     LaunchedEffect(Unit) {
@@ -323,6 +329,13 @@ internal fun AppGate(
             }
             is AuthState.Authenticated -> {
                 val authenticatedState = authState as AuthState.Authenticated
+                if (authenticatedState.isAnonymous) {
+                    ProfileRepository.clearInMemory()
+                    profileSelectionLoading = false
+                    profileSelectionTransitionActive = false
+                    gateScreen = AppGateScreen.Auth.name
+                    return@LaunchedEffect
+                }
                 ProfileRepository.ensureLoaded(authenticatedState.userId)
                 if (gateScreen == AppGateScreen.Loading.name || gateScreen == AppGateScreen.Auth.name) {
                     enterProfileGate(ProfileRepository.state.value.profiles, syncOnEnter = true)
@@ -333,6 +346,7 @@ internal fun AppGate(
 
     LaunchedEffect((authState as? AuthState.Authenticated)?.userId) {
         val authenticatedState = authState as? AuthState.Authenticated ?: return@LaunchedEffect
+        if (authenticatedState.isAnonymous) return@LaunchedEffect
         ProfileRepository.ensureLoaded(authenticatedState.userId)
         ProfileRepository.pullProfiles()
     }

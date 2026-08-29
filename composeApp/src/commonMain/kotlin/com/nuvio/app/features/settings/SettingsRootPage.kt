@@ -66,7 +66,7 @@ import nuvio.composeapp.generated.resources.about_supporters_contributors_subtit
 import nuvio.composeapp.generated.resources.about_licenses_attributions_subtitle
 import org.jetbrains.compose.resources.stringResource
 
-private const val PRIVACY_POLICY_URL = "https://nuvio.tv/privacy-policy"
+private const val PRIVACY_POLICY_URL = "https://apachiy.org/privacy"
 
 internal fun LazyListScope.settingsRootContent(
     isTablet: Boolean,
@@ -89,6 +89,9 @@ internal fun LazyListScope.settingsRootContent(
     showAboutSection: Boolean = true,
     showAdvancedSection: Boolean = true,
     showSupportersContributorsPage: Boolean = true,
+    showContentDiscovery: Boolean = true,
+    showIntegrations: Boolean = true,
+    showTracking: Boolean = true,
 ) {
     if (showAccountSection) {
         item {
@@ -114,14 +117,16 @@ internal fun LazyListScope.settingsRootContent(
                         isTablet = isTablet,
                         onClick = onAccountClick,
                     )
-                    SettingsGroupDivider(isTablet = isTablet)
-                    SettingsNavigationRow(
-                        title = stringResource(Res.string.compose_settings_page_tracking),
-                        description = stringResource(Res.string.compose_settings_root_tracking_description),
-                        icon = Icons.Default.Sync,
-                        isTablet = isTablet,
-                        onClick = onTrackingClick,
-                    )
+                    if (showTracking) {
+                        SettingsGroupDivider(isTablet = isTablet)
+                        SettingsNavigationRow(
+                            title = stringResource(Res.string.compose_settings_page_tracking),
+                            description = stringResource(Res.string.compose_settings_root_tracking_description),
+                            icon = Icons.Default.Sync,
+                            isTablet = isTablet,
+                            onClick = onTrackingClick,
+                        )
+                    }
                 }
             }
         }
@@ -141,14 +146,16 @@ internal fun LazyListScope.settingsRootContent(
                         onClick = onAppearanceClick,
                     )
                     SettingsGroupDivider(isTablet = isTablet)
-                    SettingsNavigationRow(
-                        title = stringResource(Res.string.compose_settings_page_content_discovery),
-                        description = stringResource(Res.string.compose_settings_root_content_discovery_description),
-                        icon = Icons.Rounded.Extension,
-                        isTablet = isTablet,
-                        onClick = onContentDiscoveryClick,
-                    )
-                    SettingsGroupDivider(isTablet = isTablet)
+                    if (showContentDiscovery) {
+                        SettingsNavigationRow(
+                            title = stringResource(Res.string.compose_settings_page_content_discovery),
+                            description = stringResource(Res.string.compose_settings_root_content_discovery_description),
+                            icon = Icons.Rounded.Extension,
+                            isTablet = isTablet,
+                            onClick = onContentDiscoveryClick,
+                        )
+                        SettingsGroupDivider(isTablet = isTablet)
+                    }
                     SettingsNavigationRow(
                         title = stringResource(Res.string.compose_settings_root_downloads_title),
                         description = stringResource(Res.string.compose_settings_root_downloads_description),
@@ -165,14 +172,16 @@ internal fun LazyListScope.settingsRootContent(
                         onClick = onPlaybackClick,
                     )
                     SettingsGroupDivider(isTablet = isTablet)
-                    SettingsNavigationRow(
-                        title = stringResource(Res.string.compose_settings_page_integrations),
-                        description = stringResource(Res.string.compose_settings_root_integrations_description),
-                        icon = Icons.Rounded.Link,
-                        isTablet = isTablet,
-                        onClick = onIntegrationsClick,
-                    )
-                    SettingsGroupDivider(isTablet = isTablet)
+                    if (showIntegrations) {
+                        SettingsNavigationRow(
+                            title = stringResource(Res.string.compose_settings_page_integrations),
+                            description = stringResource(Res.string.compose_settings_root_integrations_description),
+                            icon = Icons.Rounded.Link,
+                            isTablet = isTablet,
+                            onClick = onIntegrationsClick,
+                        )
+                        SettingsGroupDivider(isTablet = isTablet)
+                    }
                     SettingsNavigationRow(
                         title = stringResource(Res.string.compose_settings_page_notifications),
                         description = stringResource(Res.string.compose_settings_root_notifications_description),

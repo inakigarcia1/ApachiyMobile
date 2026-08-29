@@ -8,10 +8,13 @@ internal actual fun currentDeviceClientMetadata(): DeviceClientMetadata {
         .trim()
         .ifBlank { device.localizedModel.trim() }
         .ifBlank { "Apple device" }
-    val platform = "${device.systemName()} ${device.systemVersion}".trim()
+    val osVersion = device.systemVersion.trim().ifBlank { "unknown" }
+    val platform = "${device.systemName()} $osVersion".trim()
 
     return DeviceClientMetadata(
         deviceName = deviceName,
         platform = platform,
+        osVersion = osVersion,
+        apiPlatform = "ios",
     )
 }

@@ -22,6 +22,9 @@ import com.nuvio.app.features.player.skip.NextEpisodeCard
 import com.nuvio.app.features.player.skip.NextEpisodeInfo
 import com.nuvio.app.features.player.skip.SkipIntroButton
 import com.nuvio.app.features.player.skip.SkipInterval
+import nuvio.composeapp.generated.resources.Res
+import nuvio.composeapp.generated.resources.player_loading_generic
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
 internal fun BoxScope.PlayerPlaybackOverlays(
@@ -92,7 +95,7 @@ internal fun BoxScope.PlayerPlaybackOverlays(
             onBack = onBackWithProgress,
             horizontalSafePadding = horizontalSafePadding,
             modifier = Modifier.fillMaxSize(),
-            message = p2pInitialLoadingMessage,
+            message = stringResource(Res.string.player_loading_generic),
             progress = p2pInitialLoadingProgress,
         )
     }

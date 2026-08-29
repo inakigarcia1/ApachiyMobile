@@ -11,7 +11,7 @@ sealed interface AuthState {
 }
 
 val AuthState.isLoggedIn: Boolean
-    get() = this is AuthState.Authenticated
+    get() = this is AuthState.Authenticated && !isAnonymous
 
 val AuthState.userId: String?
     get() = (this as? AuthState.Authenticated)?.userId

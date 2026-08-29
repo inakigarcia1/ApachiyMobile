@@ -1,0 +1,76 @@
+package com.nuvio.app.core.device
+
+import com.nuvio.app.core.build.AppVersionConfig
+import com.nuvio.app.core.network.ApachiyConfig
+import com.nuvio.app.features.addons.httpRequestRaw
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+
+object ApachiyDeviceApi {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+        encodeDefaults = true
+    }
+
+    fun clientHeader(): String = "apachiy-mobile/${AppVersionConfig.VERSION_NAME.ifBlank { "dev" }}"
+
+    fun registerUrl(): String = apiUrl("v1/devices/register")
+
+    fun listUrl(): String = apiUrl("v1/devices")
+
+    fun accountMeUrl(): String = apiUrl("api/account/me")
+
+    fun encodeRegistration(request: DeviceRegistrationRequest): String =
+        json.encodeToString(request)
+
+    fun decodeRegistration(body: String): DeviceRegistrationResponse =
+        json.decodeFromString(body)
+
+    fun decodeRegistrationError(body: String): DeviceRegistrationError? =
+        runCatching { json.decodeFromString<DeviceRegistrationError>(body) }.getOrNull()
+
+    fun decodeDeviceList(body: String): List<DeviceSummaryDto> =
+        runCatching { json.decodeFromString<List<DeviceSummaryDto>>(body) }.getOrDefault(emptyList())
+
+    fun decodeAccountMe(body: String): AccountMeResponse =
+        json.decodeFromString(body)
+
+    suspend fun postRegister(bearerToken: String, request: DeviceRegistrationRequest) =
+        httpRequestRaw(
+            method = "POST",
+            url = registerUrl(),
+            headers = authHeaders(bearerToken, jsonBody = true),
+            body = encodeRegistration(request),
+        )
+
+    suspend fun getDevices(bearerToken: String) =
+        httpRequestRaw(
+            method = "GET",
+            url = listUrl(),
+            headers = authHeaders(bearerToken),
+            body = "",
+        )
+
+    suspend fun getAccountMe(bearerToken: String) =
+        httpRequestRaw(
+            method = "GET",
+            url = accountMeUrl(),
+            headers = authHeaders(bearerToken),
+            body = "",
+        )
+
+    private fun apiUrl(path: String): String {
+        val base = ApachiyConfig.API_BASE_URL.trim().trimEnd('/')
+        return "$base/${path.trimStart('/')}"
+    }
+
+    private fun authHeaders(bearerToken: String, jsonBody: Boolean = false): Map<String, String> = buildMap {
+        put("Authorization", "Bearer $bearerToken")
+        put("X-Apachiy-Client", clientHeader())
+        put("Accept", "application/json")
+        if (jsonBody) {
+            put("Content-Type", "application/json")
+        }
+    }
+}

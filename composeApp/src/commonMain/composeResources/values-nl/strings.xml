@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="about_licenses_attributions_subtitle">Databronnen, dankbetuigingen en platformlicenties</string>
     <string name="about_supporters_contributors_subtitle">Open erkenning en projectcredits</string>
     <string name="action_back">Terug</string>
@@ -1525,7 +1525,7 @@
     <string name="addon_already_installed">Die addon is al geïnstalleerd.</string>
     <string name="addon_invalid_url">Voer een geldige addon-URL in</string>
     <string name="addon_load_manifest_failed">Kan manifest niet laden</string>
-    <string name="app_brand_name">Nuvio</string>
+    <string name="app_brand_name">Apachiy</string>
     <string name="auth_account_deletion_failed">Verwijderen van account mislukt</string>
     <string name="auth_sign_in_failed">Inloggen mislukt</string>
     <string name="auth_sign_out_failed">Uitloggen mislukt</string>

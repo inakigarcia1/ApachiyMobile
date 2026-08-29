@@ -39,4 +39,6 @@ internal data class PlayerScreenArgs(
     val initialPositionMs: Long,
     val initialProgressFraction: Float?,
     val contentLanguage: String? = null,
+    val videoHash: String? = null,
+    val videoSize: Long? = null,
 )

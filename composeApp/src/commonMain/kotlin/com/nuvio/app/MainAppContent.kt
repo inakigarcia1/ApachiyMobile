@@ -845,10 +845,12 @@ internal fun MainAppContent(
                 initialProgressFraction = resumeEntry?.progressFraction?.takeIf { it > 0f },
             )
             if (playerSettingsUiState.externalPlayerEnabled) {
+                if (!allowPlaybackOrNotify()) return
                 coroutineScope.launch { openExternalPlayback(playerLaunch) }
                 return
             }
             val launchId = PlayerLaunchStore.put(playerLaunch)
+            if (!allowPlaybackOrNotify()) return
             navController.navigate(PlayerRoute(launchId = launchId, title = playerLaunch.title))
         }
 
@@ -896,10 +898,12 @@ internal fun MainAppContent(
                         initialProgressFraction = if (startFromBeginning) null else resumeProgressFraction,
                     )
                     if (playerSettingsUiState.externalPlayerEnabled) {
+                        if (!allowPlaybackOrNotify()) return false
                         openExternalPlayback(playerLaunch)
                         true
                     } else {
                         val launchId = PlayerLaunchStore.put(playerLaunch)
+                        if (!allowPlaybackOrNotify()) return false
                         navController.navigate(PlayerRoute(launchId = launchId, title = playerLaunch.title))
                         true
                     }
@@ -967,10 +971,12 @@ internal fun MainAppContent(
                         initialProgressFraction = targetResumeProgressFraction,
                     )
                     if (playerSettingsUiState.externalPlayerEnabled) {
+                        if (!allowPlaybackOrNotify()) return
                         coroutineScope.launch { openExternalPlayback(playerLaunch) }
                         return
                     }
                     val launchId = PlayerLaunchStore.put(playerLaunch)
+                    if (!allowPlaybackOrNotify()) return
                     navController.navigate(PlayerRoute(launchId = launchId, title = playerLaunch.title))
                     return
                 }

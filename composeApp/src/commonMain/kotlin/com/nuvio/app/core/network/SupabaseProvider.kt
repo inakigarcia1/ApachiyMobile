@@ -7,6 +7,7 @@ import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.functions.Functions
 import io.github.jan.supabase.postgrest.Postgrest
+import io.github.jan.supabase.realtime.Realtime
 import io.github.jan.supabase.storage.Storage
 import io.ktor.client.plugins.HttpRequestRetry
 import io.ktor.client.plugins.defaultRequest
@@ -24,7 +25,7 @@ object SupabaseProvider {
     @OptIn(SupabaseInternal::class)
     private fun createClient(): SupabaseClient {
         val configuration = ServerConfigurationRepository.active.value
-        val userAgent = "NuvioMobile/${AppVersionConfig.VERSION_NAME.ifBlank { "dev" }}"
+        val userAgent = "ApachiyMobile/${AppVersionConfig.VERSION_NAME.ifBlank { "dev" }}"
         return createSupabaseClient(
             supabaseUrl = configuration.backendUrl,
             supabaseKey = configuration.publishableKey,
@@ -99,6 +100,7 @@ object SupabaseProvider {
             install(Postgrest)
             install(Functions)
             install(Storage)
+            install(Realtime)
         }
     }
 

@@ -16,12 +16,14 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.TimeMark
 import kotlin.time.TimeSource
 
-private const val CLIENT_NAME = "Nuvio Mobile"
+private const val CLIENT_NAME = "Apachiy Mobile"
 private val REGISTRATION_INTERVAL = 15.minutes
 
 internal data class DeviceClientMetadata(
     val deviceName: String,
     val platform: String,
+    val osVersion: String,
+    val apiPlatform: String,
 )
 
 internal expect fun currentDeviceClientMetadata(): DeviceClientMetadata

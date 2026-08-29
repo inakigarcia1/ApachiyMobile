@@ -72,6 +72,7 @@ import nuvio.composeapp.generated.resources.compose_player_close
 import nuvio.composeapp.generated.resources.compose_player_episode_code_full
 import nuvio.composeapp.generated.resources.compose_player_go_back
 import nuvio.composeapp.generated.resources.compose_player_playback_error
+import nuvio.composeapp.generated.resources.player_error_try_another_option
 import nuvio.composeapp.generated.resources.compose_player_youre_watching
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
@@ -518,7 +519,7 @@ internal fun ErrorModal(
                 textAlign = TextAlign.Center,
             )
             Text(
-                text = message,
+                text = stringResource(Res.string.player_error_try_another_option),
                 style = MaterialTheme.nuvioTypeScale.bodyLg.copy(lineHeight = 24.sp),
                 color = Color.White.copy(alpha = 0.72f),
                 textAlign = TextAlign.Center,

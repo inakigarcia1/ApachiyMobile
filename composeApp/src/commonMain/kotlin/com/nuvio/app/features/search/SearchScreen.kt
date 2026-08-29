@@ -17,7 +17,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -57,7 +61,6 @@ import com.nuvio.app.features.home.components.homeSectionHorizontalPaddingForWid
 import com.nuvio.app.features.home.components.HomeSkeletonRow
 import com.nuvio.app.features.home.components.posterGridColumnCountForWidth
 import com.nuvio.app.features.watched.WatchedRepository
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.emptyFlow
@@ -116,6 +119,9 @@ fun SearchScreen(
     val networkStatusUiState by NetworkStatusRepository.uiState.collectAsStateWithLifecycle()
     var query by rememberSaveable { mutableStateOf("") }
     var lastRequestedQuery by rememberSaveable { mutableStateOf<String?>(null) }
+    fun submitCurrentQuery() {
+        lastRequestedQuery = query.trim().takeIf { it.isNotBlank() }
+    }
     var observedOfflineState by remember { mutableStateOf(false) }
     val discoverInFocus by remember(query, listState) {
         derivedStateOf {
@@ -155,14 +161,11 @@ fun SearchScreen(
         SearchRepository.refreshDiscover(addonsUiState.addons)
     }
 
-    LaunchedEffect(query, addonRefreshKey, homeCatalogSettingsUiState.hideUnreleasedContent) {
-        val normalizedQuery = query.trim()
+    LaunchedEffect(lastRequestedQuery, addonRefreshKey, homeCatalogSettingsUiState.hideUnreleasedContent) {
+        val normalizedQuery = lastRequestedQuery?.trim().orEmpty()
         if (normalizedQuery.isBlank()) {
-            lastRequestedQuery = null
             SearchRepository.clear()
         } else {
-            delay(350)
-            lastRequestedQuery = normalizedQuery
             SearchRepository.search(
                 query = normalizedQuery,
                 addons = addonsUiState.addons,
@@ -265,15 +268,22 @@ fun SearchScreen(
                     androidx.compose.foundation.layout.Box(modifier = Modifier.padding(horizontal = 16.dp)) {
                         NuvioInputField(
                             value = query,
-                            onValueChange = { query = it },
+                            onValueChange = { newQuery ->
+                                query = newQuery
+                                if (newQuery.isBlank()) {
+                                    lastRequestedQuery = null
+                                }
+                            },
                             placeholder = stringResource(Res.string.compose_search_placeholder),
                             modifier = Modifier.focusRequester(focusRequester),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(onSearch = { submitCurrentQuery() }),
                             trailingContent = if (query.isNotBlank()) {
                                 {
-                                    IconButton(onClick = { query = "" }) {
+                                    IconButton(onClick = { submitCurrentQuery() }) {
                                         Icon(
-                                            imageVector = Icons.Rounded.Close,
-                                            contentDescription = stringResource(Res.string.compose_search_clear),
+                                            imageVector = Icons.Rounded.Search,
+                                            contentDescription = stringResource(Res.string.compose_nav_search),
                                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         )
                                     }
@@ -293,7 +303,10 @@ fun SearchScreen(
                 item(key = "recent_searches") {
                     SearchRecentSection(
                         recentSearches = recentSearches,
-                        onSearchPress = { recentQuery -> query = recentQuery },
+                        onSearchPress = { recentQuery ->
+                            query = recentQuery
+                            lastRequestedQuery = recentQuery.trim().takeIf { it.isNotBlank() }
+                        },
                         onRemoveSearch = SearchHistoryRepository::removeSearch,
                     )
                 }

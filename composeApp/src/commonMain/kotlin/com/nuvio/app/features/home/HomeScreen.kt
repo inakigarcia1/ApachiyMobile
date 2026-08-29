@@ -130,6 +130,8 @@ fun HomeScreen(
     }
 
     val addonsUiState by AddonRepository.uiState.collectAsStateWithLifecycle()
+    val hasCompletedInitialAddonReconciliation by
+        AddonRepository.hasCompletedInitialAddonReconciliation.collectAsStateWithLifecycle()
     val homeUiState by HomeRepository.uiState.collectAsStateWithLifecycle()
     val homeSettingsUiState by remember {
         HomeCatalogSettingsRepository.snapshot()
@@ -926,7 +928,9 @@ fun HomeScreen(
             }
 
             when {
-                !hasActiveAddons && !hasRenderableCollectionRows -> {
+                !hasActiveAddons &&
+                    !hasRenderableCollectionRows &&
+                    hasCompletedInitialAddonReconciliation -> {
                     homeContinueWatchingSections(
                         preferences = continueWatchingPreferences,
                         continueWatchingItems = continueWatchingItems,
@@ -949,7 +953,10 @@ fun HomeScreen(
                     }
                 }
 
-                homeUiState.isLoading && homeUiState.sections.isEmpty() && !hasRenderableCollectionRows -> {
+                (
+                    !hasCompletedInitialAddonReconciliation ||
+                        (homeUiState.isLoading && homeUiState.sections.isEmpty())
+                    ) && !hasRenderableCollectionRows -> {
                     homeContinueWatchingSections(
                         preferences = continueWatchingPreferences,
                         continueWatchingItems = continueWatchingItems,

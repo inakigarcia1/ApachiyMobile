@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="about_licenses_attributions_subtitle">Sumber data, pengakuan, dan lisensi platform</string>
     <string name="about_supporters_contributors_subtitle">Apresiasi terbuka dan kredit proyek</string>
     <string name="action_back">Kembali</string>
@@ -1248,7 +1248,7 @@
     <string name="addon_already_installed">Addon tersebut sudah terpasang.</string>
     <string name="addon_invalid_url">Masukkan URL addon yang valid</string>
     <string name="addon_load_manifest_failed">Tidak dapat memuat manifes</string>
-    <string name="app_brand_name">Nuvio</string>
+    <string name="app_brand_name">Apachiy</string>
     <string name="auth_account_deletion_failed">Penghapusan akun gagal</string>
     <string name="auth_sign_in_failed">Masuk gagal</string>
     <string name="auth_sign_out_failed">Keluar gagal</string>

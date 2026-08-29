@@ -186,6 +186,9 @@ internal fun PlayerScreenRuntime.switchToP2pSourceStream(stream: StreamItem) {
     activeProviderName = stream.addonName
     activeProviderAddonId = stream.addonId
     currentStreamBingeGroup = stream.behaviorHints.bingeGroup
+    activeVideoHash = stream.behaviorHints.videoHash
+    activeVideoSize = stream.behaviorHints.videoSize
+    stream.behaviorHints.filename?.let { activeTorrentFilename = it }
     activeInitialPositionMs = currentPositionMs
     activeInitialProgressFraction = null
     showSourcesPanel = false
@@ -276,6 +279,9 @@ internal fun PlayerScreenRuntime.switchToSource(stream: StreamItem) {
     activeProviderName = stream.addonName
     activeProviderAddonId = stream.addonId
     currentStreamBingeGroup = stream.behaviorHints.bingeGroup
+    activeVideoHash = stream.behaviorHints.videoHash
+    activeVideoSize = stream.behaviorHints.videoSize
+    stream.behaviorHints.filename?.let { activeTorrentFilename = it }
     activeInitialPositionMs = currentPositionMs
     activeInitialProgressFraction = null
     showSourcesPanel = false
@@ -468,6 +474,9 @@ private fun PlayerScreenRuntime.applyEpisodeStreamMetadata(
     activeProviderName = stream.addonName
     activeProviderAddonId = stream.addonId
     currentStreamBingeGroup = stream.behaviorHints.bingeGroup
+    activeVideoHash = stream.behaviorHints.videoHash
+    activeVideoSize = stream.behaviorHints.videoSize
+    stream.behaviorHints.filename?.let { activeTorrentFilename = it }
     activeSeasonNumber = episode.season
     activeEpisodeNumber = episode.episode
     activeEpisodeTitle = episode.title

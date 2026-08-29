@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="about_licenses_attributions_subtitle">Fuentes de datos, reconocimientos y licencias de plataforma</string>
     <string name="about_supporters_contributors_subtitle">Reconocimiento abierto y créditos del proyecto</string>
     <string name="action_back">Atrás</string>
@@ -1313,7 +1313,7 @@
     <string name="streams_empty_no_addons_message">Instala primero un addon para cargar streams de este título.</string>
     <string name="streams_empty_no_stream_addon_message">Tus addons instalados no proporcionan streams para este tipo de título.</string>
     <string name="streams_empty_no_stream_addon_title">No hay addon de streams disponible</string>
-    <string name="streams_empty_no_streams_message">Ninguno de tus addons instalados devolvió streams para este título.</string>
+    <string name="streams_empty_no_streams_message">No se encontraron opciones de reproducción.</string>
     <string name="streams_episode_badge">T%1$d E%2$d</string>
     <string name="streams_episode_fallback_title">Episodio</string>
     <string name="streams_episode_title_with_name">T%1$dE%2$d - %3$s</string>
@@ -1362,7 +1362,7 @@
     <string name="addon_already_installed">Ese complemento ya está instalado.</string>
     <string name="addon_invalid_url">Introduce una URL de complemento válida</string>
     <string name="addon_load_manifest_failed">No se pudo cargar el manifiesto</string>
-    <string name="app_brand_name">Nuvio</string>
+    <string name="app_brand_name">Apachiy</string>
     <string name="auth_account_deletion_failed">No se pudo eliminar la cuenta</string>
     <string name="auth_sign_in_failed">Error al iniciar sesión</string>
     <string name="auth_sign_out_failed">Error al cerrar sesión</string>
@@ -1372,9 +1372,9 @@
     <string name="continue_watching_up_next_episode">A continuación • T%1$dE%2$d</string>
     <string name="detail_logo_content_description">logotipo de %1$s</string>
     <string name="details_comments_load_failed">No se pudieron cargar los comentarios</string>
-    <string name="details_load_failed_all_addons">No se pudieron cargar los detalles desde ningún complemento.</string>
+    <string name="details_load_failed_all_addons">No se pudieron cargar los detalles.</string>
     <string name="details_networks">Cadenas</string>
-    <string name="details_no_addon_meta">Ningún complemento proporciona metadatos para este contenido.</string>
+    <string name="details_no_addon_meta">No se pudieron cargar los detalles.</string>
     <string name="download_failed">Descarga fallida</string>
     <string name="downloads_channel_description">Muestra el progreso en vivo y los controles de descarga.</string>
     <string name="downloads_channel_name">Descargas</string>
@@ -1928,4 +1928,28 @@
     <string name="player_torrent_starting_engine">Arrancando el motor P2P...</string>
     <string name="player_error_failed_start_torrent">No se pudo iniciar el torrent: %1$s</string>
     <string name="player_error_torrent">Error de torrent: %1$s</string>
+    <string name="account_error_invalid_credentials">Credenciales no válidas</string>
+    <string name="account_error_email_not_confirmed">Confirmá tu email primero.</string>
+    <string name="account_error_email_already_registered">Ya existe una cuenta con este email.</string>
+    <string name="account_error_invalid_email">Ingresá un email válido.</string>
+    <string name="account_error_password_too_short">La contraseña es demasiado corta.</string>
+    <string name="account_error_password_too_weak">La contraseña es demasiado débil.</string>
+    <string name="account_error_signup_disabled">El registro está deshabilitado.</string>
+    <string name="account_error_rate_limited">Demasiados intentos. Probá de nuevo más tarde.</string>
+    <string name="account_error_no_internet">Sin conexión a internet.</string>
+    <string name="account_error_connection_timeout">Se agotó el tiempo de espera. Probá de nuevo.</string>
+    <string name="account_error_connection_refused">No se pudo conectar al servidor.</string>
+    <string name="account_error_not_authenticated">Iniciá sesión primero.</string>
+    <string name="account_error_service_unavailable">Servicio no disponible. Probá de nuevo más tarde.</string>
+    <string name="account_error_invalid_request">Solicitud inválida. Revisá los datos ingresados.</string>
+    <string name="account_error_unexpected">Ocurrió un error inesperado.</string>
+    <string name="device_limit_title">Límite de dispositivos</string>
+    <string name="device_limit_message">Ha alcanzado la cantidad máxima de dispositivos permitidos para su cuenta. Para gestionarlos, visite apachiy.org/dashboard/devices.</string>
+    <string name="device_limit_manage_devices">Gestionar dispositivos</string>
+    <string name="subscription_inactive_title">Sin suscripción activa</string>
+    <string name="subscription_inactive_message">No tiene una suscripción activa. Gestione su plan en apachiy.org/dashboard.</string>
+    <string name="subscription_inactive_manage">Gestionar suscripción</string>
+    <string name="addon_denied_host">Este addon no está permitido.</string>
+    <string name="player_error_try_another_option">Ocurrió un error al reproducir. Por favor, pruebe con otra opción</string>
+    <string name="player_loading_generic">Cargando…</string>
 </resources>

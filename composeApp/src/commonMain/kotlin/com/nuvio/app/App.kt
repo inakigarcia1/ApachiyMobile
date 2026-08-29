@@ -1,8 +1,12 @@
 package com.nuvio.app
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
@@ -11,6 +15,12 @@ import coil3.compose.setSingletonImageLoaderFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import coil3.svg.SvgDecoder
+import coil3.network.ktor3.KtorNetworkFetcherFactory
+import com.nuvio.app.core.account.InactiveSubscriptionNotifier
+import com.nuvio.app.core.auth.DeviceLimitNotifier
+import com.nuvio.app.core.network.createAuthenticatedNetworkHttpClient
+import com.nuvio.app.core.ui.DeviceLimitDialog
+import com.nuvio.app.core.ui.InactiveSubscriptionDialog
 import com.nuvio.app.core.ui.NativeProfileSwitcherController
 import com.nuvio.app.core.ui.NuvioTheme
 import com.nuvio.app.core.ui.configurePlatformImageLoader
@@ -77,6 +87,7 @@ internal fun AppEnvironment(content: @Composable () -> Unit) {
                 add(SvgDecoder.Factory())
                 add(
                     coil3.network.ktor3.KtorNetworkFetcherFactory(
+                        httpClient = { createAuthenticatedNetworkHttpClient() },
                         cacheStrategy = { coil3.network.cachecontrol.CacheControlCacheStrategy() },
                     ),
                 )
@@ -93,6 +104,22 @@ internal fun AppEnvironment(content: @Composable () -> Unit) {
     }.collectAsStateWithLifecycle()
 
     NuvioTheme(appTheme = selectedTheme, amoled = amoledEnabled) {
-        content()
+        var showDeviceLimitDialog by remember { mutableStateOf(false) }
+        var showInactiveSubscriptionDialog by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) {
+            DeviceLimitNotifier.events.collect { showDeviceLimitDialog = true }
+        }
+        LaunchedEffect(Unit) {
+            InactiveSubscriptionNotifier.events.collect { showInactiveSubscriptionDialog = true }
+        }
+        Box {
+            content()
+            if (showDeviceLimitDialog) {
+                DeviceLimitDialog(onDismiss = { showDeviceLimitDialog = false })
+            }
+            if (showInactiveSubscriptionDialog) {
+                InactiveSubscriptionDialog(onDismiss = { showInactiveSubscriptionDialog = false })
+            }
+        }
     }
 }

@@ -47,7 +47,13 @@ object SubtitleRepository {
 
     private var activeFetchJob: Job? = null
 
-    fun fetchAddonSubtitles(type: String, videoId: String) {
+    fun fetchAddonSubtitles(
+        type: String,
+        videoId: String,
+        videoHash: String? = null,
+        videoSize: Long? = null,
+        filename: String? = null,
+    ) {
         activeFetchJob?.cancel()
         activeFetchJob = scope.launch {
             val requestType = canonicalSubtitleType(type)
@@ -71,15 +77,21 @@ object SubtitleRepository {
                 subtitleAddons.map { addon ->
                     async {
                         val manifest = addon.manifest ?: return@async
+                        val extraPathSegment = buildSubtitleExtraPathSegment(
+                            videoHash = videoHash,
+                            videoSize = videoSize,
+                            filename = filename,
+                        )
                         val subtitleUrl = buildAddonResourceUrl(
                             manifestUrl = manifest.transportUrl,
                             resource = "subtitles",
                             type = requestType,
                             id = videoId,
+                            extraPathSegment = extraPathSegment,
                         )
 
                         try {
-                            val response = withTimeoutOrNull(10_000L) {
+                            val response = withTimeoutOrNull(30_000L) {
                                 withContext(Dispatchers.Default) {
                                     fetchAddonResponseText(subtitleUrl)
                                 }

@@ -18,7 +18,7 @@ import kotlinx.serialization.json.Json
 
 data class StreamBadgeSettingsUiState(
     val rules: StreamBadgeRules = StreamBadgeRules(),
-    val showFileSizeBadges: Boolean = true,
+    val showFileSizeBadges: Boolean = false,
     val showAddonLogo: Boolean = false,
     val badgePlacement: StreamBadgePlacement = StreamBadgePlacement.BOTTOM,
 )
@@ -40,7 +40,7 @@ object StreamBadgeSettingsRepository {
 
     private var hasLoaded = false
     private var streamBadgeRules = StreamBadgeRules()
-    private var showFileSizeBadges = true
+    private var showFileSizeBadges = false
     private var showAddonLogo = false
     private var badgePlacement = StreamBadgePlacement.BOTTOM
 
@@ -56,7 +56,7 @@ object StreamBadgeSettingsRepository {
     fun clearLocalState() {
         hasLoaded = false
         streamBadgeRules = StreamBadgeRules()
-        showFileSizeBadges = true
+        showFileSizeBadges = false
         showAddonLogo = false
         badgePlacement = StreamBadgePlacement.BOTTOM
         _uiState.value = StreamBadgeSettingsUiState()
@@ -134,18 +134,10 @@ object StreamBadgeSettingsRepository {
 
     fun setShowFileSizeBadges(enabled: Boolean) {
         ensureLoaded()
-        if (showFileSizeBadges == enabled) return
-        showFileSizeBadges = enabled
-        publish()
-        StreamBadgeSettingsStorage.saveShowFileSizeBadges(enabled)
     }
 
     fun setShowAddonLogo(enabled: Boolean) {
         ensureLoaded()
-        if (showAddonLogo == enabled) return
-        showAddonLogo = enabled
-        publish()
-        StreamBadgeSettingsStorage.saveShowAddonLogo(enabled)
     }
 
     fun setBadgePlacement(placement: StreamBadgePlacement) {
@@ -165,8 +157,8 @@ object StreamBadgeSettingsRepository {
             null
         }
         streamBadgeRules = storedRules ?: legacyRules ?: StreamBadgeRules()
-        showFileSizeBadges = StreamBadgeSettingsStorage.loadShowFileSizeBadges() ?: true
-        showAddonLogo = StreamBadgeSettingsStorage.loadShowAddonLogo() ?: false
+        showFileSizeBadges = false
+        showAddonLogo = false
         badgePlacement = StreamBadgeSettingsStorage.loadStreamBadgePlacement()
             ?.let { storedPlacement ->
                 StreamBadgePlacement.entries.firstOrNull { placement ->

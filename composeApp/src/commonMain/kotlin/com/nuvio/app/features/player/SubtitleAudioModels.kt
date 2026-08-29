@@ -147,7 +147,7 @@ data class SubtitleAudioUiState(
 
 @Composable
 fun localizedTrackDisplayName(label: String?, language: String?, index: Int): String {
-    if (!label.isNullOrBlank()) return label
     if (!language.isNullOrBlank()) return languageLabelForCode(language)
+    if (!label.isNullOrBlank()) return label
     return stringResource(Res.string.compose_player_track_number, index + 1)
 }

@@ -85,7 +85,7 @@ fun ProfileEditScreen(
     var avatarUrl by rememberSaveable { mutableStateOf(currentProfile?.avatarUrl.orEmpty()) }
     var selectedBackgroundId by rememberSaveable { mutableStateOf(currentProfile?.profileBackgroundId) }
     var selectedBackgroundUrl by rememberSaveable { mutableStateOf(currentProfile?.profileBackgroundUrl) }
-    var usesPrimaryAddons by rememberSaveable { mutableStateOf(currentProfile?.usesPrimaryAddons ?: false) }
+    var usesPrimaryAddons by rememberSaveable { mutableStateOf(true) }
     var isSaving by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var showPinSetup by remember { mutableStateOf(false) }
@@ -316,7 +316,7 @@ fun ProfileEditScreen(
                                 avatarColorHex = avatarColorHex,
                                 avatarId = if (customAvatarUrl == null) selectedAvatarId else null,
                                 avatarUrl = customAvatarUrl,
-                                usesPrimaryAddons = usesPrimaryAddons,
+                                usesPrimaryAddons = true,
                             )
                         } else {
                             ProfileRepository.updateProfile(
@@ -327,7 +327,7 @@ fun ProfileEditScreen(
                                 avatarUrl = customAvatarUrl,
                                 profileBackgroundId = selectedBackgroundId,
                                 profileBackgroundUrl = selectedBackgroundUrl,
-                                usesPrimaryAddons = usesPrimaryAddons,
+                                usesPrimaryAddons = true,
                             )
                         }
                         isSaving = false
@@ -499,11 +499,7 @@ private fun ProfileIdentityCard(
                                 profileIndex?.let { stringResource(Res.string.profile_label_number, it) }
                                     ?: stringResource(Res.string.profile_unnamed)
                             },
-                            if (usesPrimaryAddons) {
-                                stringResource(Res.string.profile_primary_addons_on)
-                            } else {
-                                stringResource(Res.string.profile_primary_addons_off)
-                            },
+                            stringResource(Res.string.profile_primary_addons_on),
                         ).joinToString("  |  "),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -528,13 +524,6 @@ private fun ProfileIdentityCard(
                 value = name,
                 onValueChange = onNameChange,
                 placeholder = stringResource(Res.string.profile_name_placeholder),
-            )
-
-            ProfileOptionRow(
-                title = stringResource(Res.string.profile_use_primary_addons),
-                description = stringResource(Res.string.profile_use_primary_addons_description),
-                checked = usesPrimaryAddons,
-                onCheckedChange = onUsesPrimaryAddonsChange,
             )
         }
     }

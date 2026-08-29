@@ -55,6 +55,10 @@ object AddonRepository {
     private val _uiState = MutableStateFlow(AddonsUiState())
     val uiState: StateFlow<AddonsUiState> = _uiState.asStateFlow()
 
+    private val _hasCompletedInitialAddonReconciliation = MutableStateFlow(false)
+    val hasCompletedInitialAddonReconciliation: StateFlow<Boolean> =
+        _hasCompletedInitialAddonReconciliation.asStateFlow()
+
     private var initialized = false
     private var pulledFromServer = false
     private var currentProfileId: Int = 1
@@ -99,6 +103,7 @@ object AddonRepository {
         currentProfileId = effectiveProfileId
         initialized = false
         pulledFromServer = false
+        _hasCompletedInitialAddonReconciliation.value = false
         _uiState.value = AddonsUiState()
     }
 
@@ -109,10 +114,12 @@ object AddonRepository {
         currentProfileId = 1
         initialized = false
         pulledFromServer = false
+        _hasCompletedInitialAddonReconciliation.value = false
         _uiState.value = AddonsUiState()
     }
 
     suspend fun pullFromServer(profileId: Int) {
+        try {
         currentProfileId = resolveEffectiveProfileId(profileId)
         log.i { "pullFromServer() — profileId=$profileId, initialized=$initialized, pulledFromServer=$pulledFromServer" }
         runCatching {
@@ -132,7 +139,7 @@ object AddonRepository {
                 }
             }
 
-            val urls = rowsByUrl.keys.toList()
+            val urls = rowsByUrl.keys.filterNot(DeniedAddonUrls::isDeniedAddonUrl).toList()
             log.i { "pullFromServer() — server returned ${rows.size} addons" }
             urls.forEachIndexed { i, u -> log.d { "  server[$i]: $u" } }
 
@@ -220,6 +227,9 @@ object AddonRepository {
         }.onFailure { e ->
             log.e(e) { "pullFromServer() — FAILED" }
         }
+        } finally {
+            _hasCompletedInitialAddonReconciliation.value = true
+        }
     }
 
     suspend fun awaitManifestsLoaded() {
@@ -240,6 +250,10 @@ object AddonRepository {
             normalizeManifestUrl(rawUrl)
         } catch (error: IllegalArgumentException) {
             return AddAddonResult.Error(error.message ?: getString(Res.string.addon_invalid_url))
+        }
+
+        if (DeniedAddonUrls.isDeniedAddonUrl(manifestUrl)) {
+            return AddAddonResult.Error(getString(Res.string.addon_denied_host))
         }
 
         if (_uiState.value.addons.any { it.manifestUrl == manifestUrl }) {

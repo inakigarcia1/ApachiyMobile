@@ -95,7 +95,6 @@ import kotlin.math.sin
 import kotlinx.coroutines.launch
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.compose_auth_already_have_account
-import nuvio.composeapp.generated.resources.compose_auth_continue_without_account
 import nuvio.composeapp.generated.resources.compose_auth_create_account
 import nuvio.composeapp.generated.resources.compose_auth_dont_have_account
 import nuvio.composeapp.generated.resources.compose_auth_email
@@ -105,7 +104,6 @@ import nuvio.composeapp.generated.resources.compose_auth_sign_in
 import nuvio.composeapp.generated.resources.compose_auth_sign_in_subtitle
 import nuvio.composeapp.generated.resources.compose_auth_sign_up
 import nuvio.composeapp.generated.resources.compose_auth_sign_up_subtitle
-import nuvio.composeapp.generated.resources.compose_auth_store_locally
 import nuvio.composeapp.generated.resources.compose_auth_tagline
 import nuvio.composeapp.generated.resources.compose_auth_terms_link
 import nuvio.composeapp.generated.resources.compose_auth_terms_prefix
@@ -304,11 +302,7 @@ fun AuthScreen(
                         onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
                         onSubmit = ::submitAuth,
                         onToggleAuthMode = ::toggleAuthMode,
-                        onContinueWithoutAccount = {
-                            focusManager.clearFocus(force = true)
-                            DeviceLinkAuthRepository.cancel()
-                            AuthRepository.signInAnonymously()
-                        },
+                        onContinueWithoutAccount = {},
                         onStartDeviceLink = ::startDeviceLink,
                         onCancelDeviceLink = DeviceLinkAuthRepository::cancel,
                         onEmailBoundsChange = { emailFieldBounds = it },
@@ -336,11 +330,7 @@ fun AuthScreen(
                         onPasswordVisibilityToggle = { passwordVisible = !passwordVisible },
                         onSubmit = ::submitAuth,
                         onToggleAuthMode = ::toggleAuthMode,
-                        onContinueWithoutAccount = {
-                            focusManager.clearFocus(force = true)
-                            DeviceLinkAuthRepository.cancel()
-                            AuthRepository.signInAnonymously()
-                        },
+                        onContinueWithoutAccount = {},
                         onStartDeviceLink = ::startDeviceLink,
                         onCancelDeviceLink = DeviceLinkAuthRepository::cancel,
                         onEmailBoundsChange = { emailFieldBounds = it },
@@ -773,7 +763,7 @@ private fun AuthForm(
             Spacer(modifier = Modifier.height(14.dp * scale))
             AuthTermsAcknowledgement(
                 scale = scale,
-                onTermsClick = { uriHandler.openUri("https://nuvio.tv/terms") },
+                onTermsClick = { uriHandler.openUri("https://apachiy.org/terms") },
             )
         }
 
@@ -816,27 +806,8 @@ private fun AuthForm(
             Spacer(modifier = Modifier.height(14.dp * scale))
         }
 
-        AuthSecondaryButton(
-            text = stringResource(Res.string.compose_auth_continue_without_account),
-            enabled = !isLoading,
-            height = metrics.secondaryHeight,
-            scale = scale,
-            onClick = onContinueWithoutAccount,
-        )
-
         Spacer(modifier = Modifier.height(14.dp))
 
-        Text(
-            text = stringResource(Res.string.compose_auth_store_locally),
-            modifier = Modifier.fillMaxWidth(),
-            style = MaterialTheme.typography.bodyMedium.copy(
-                color = AuthTextMuted,
-                fontSize = (13f * scale).sp,
-                lineHeight = (18f * scale).sp,
-                fontWeight = FontWeight.Normal,
-            ),
-            textAlign = TextAlign.Center,
-        )
     }
 }
 

@@ -23,8 +23,8 @@ import kotlinx.coroutines.runBlocking
 import nuvio.composeapp.generated.resources.*
 import org.jetbrains.compose.resources.getString
 
-private const val gitHubOwner = "NuvioMedia"
-private const val gitHubRepo = "NuvioMobile"
+private const val gitHubOwner = "inakigarcia1"
+private const val gitHubRepo = "ApachiyMobile"
 private const val gitHubApiBase = "https://api.github.com"
 private const val releaseChannelBranch = "cmp-rewrite"
 
@@ -124,7 +124,7 @@ private object AppUpdaterRepository {
             url = "$gitHubApiBase/repos/$gitHubOwner/$gitHubRepo/releases?per_page=20",
             headers = mapOf(
                 "Accept" to "application/vnd.github+json",
-                "User-Agent" to "NuvioMobile",
+                "User-Agent" to "ApachiyMobile",
             ),
             body = "",
         )
@@ -197,7 +197,12 @@ class AppUpdaterController internal constructor(
     private var autoCheckStarted = false
 
     fun ensureAutoCheckStarted() {
-        if (autoCheckStarted || !AppFeaturePolicy.inAppUpdaterEnabled || !AppUpdaterPlatform.isSupported) {
+        if (
+            autoCheckStarted ||
+            !AppFeaturePolicy.inAppUpdaterEnabled ||
+            !AppUpdaterPlatform.isSupported ||
+            AppUpdaterPlatform.isDebugBuild
+        ) {
             return
         }
         autoCheckStarted = true

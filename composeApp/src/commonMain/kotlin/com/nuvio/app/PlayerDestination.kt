@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import com.nuvio.app.core.account.AccountStatusRepository
+import com.nuvio.app.core.account.InactiveSubscriptionNotifier
 import com.nuvio.app.core.ui.NuvioToastController
 import com.nuvio.app.features.player.ExternalPlayerIntentResult
 import com.nuvio.app.features.player.ExternalPlayerPlatform
@@ -28,6 +30,14 @@ internal fun PlayerDestination(
     openExternalStreamUrl: (String) -> Boolean,
 ) {
     val onBack = rememberGuardedPopBackStack(navController, route)
+    if (!AccountStatusRepository.canStartPlayback()) {
+        LaunchedEffect(Unit) {
+            InactiveSubscriptionNotifier.notifyInactiveSubscription()
+            onBack()
+        }
+        Box(modifier = Modifier.fillMaxSize())
+        return
+    }
     val launch = remember(route.launchId) { PlayerLaunchStore.get(route.launchId) }
     if (launch == null) {
         LaunchedEffect(route.launchId) {
@@ -72,6 +82,8 @@ internal fun PlayerDestination(
         initialPositionMs = launch.initialPositionMs,
         initialProgressFraction = launch.initialProgressFraction,
         contentLanguage = launch.contentLanguage,
+        videoHash = launch.videoHash,
+        videoSize = launch.videoSize,
         onBack = onBack,
         onOpenInExternalPlayer = { request ->
             val playerLaunch = PlayerLaunch(

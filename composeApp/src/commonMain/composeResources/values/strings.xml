@@ -1,4 +1,4 @@
-<resources>
+﻿<resources>
     <string name="theme_gold">Gold</string>
     <string name="theme_jade">Jade</string>
     <string name="theme_rose_gold">Rose Gold</string>
@@ -349,7 +349,7 @@
     <string name="compose_auth_link_code_expired">This code expired.</string>
     <string name="compose_auth_link_creating_code">Creating code…</string>
     <string name="compose_auth_link_failed">Link sign-in failed.</string>
-    <string name="compose_auth_link_open">Open nuvio.tv/link</string>
+    <string name="compose_auth_link_open">Open apachiy.org/link</string>
     <string name="compose_auth_link_open_failed">Couldn't open the link.</string>
     <string name="compose_auth_link_sign_in">Sign In with Link</string>
     <string name="compose_auth_link_signing_in">Signing in…</string>
@@ -1559,7 +1559,7 @@
     <string name="streams_empty_no_addons_message">Install an addon first to load streams for this title.</string>
     <string name="streams_empty_no_stream_addon_message">Your installed addons do not provide streams for this type of title.</string>
     <string name="streams_empty_no_stream_addon_title">No stream addon available</string>
-    <string name="streams_empty_no_streams_message">None of your installed addons returned streams for this title.</string>
+    <string name="streams_empty_no_streams_message">No se encontraron opciones de reproducción.</string>
     <string name="streams_episode_badge">S%1$d E%2$d</string>
     <string name="streams_episode_fallback_title">Episode</string>
     <string name="streams_episode_title_with_name">S%1$dE%2$d - %3$s</string>
@@ -1619,7 +1619,7 @@
     <string name="addon_already_installed">That addon is already installed.</string>
     <string name="addon_invalid_url">Enter a valid addon URL</string>
     <string name="addon_load_manifest_failed">Unable to load manifest</string>
-    <string name="app_brand_name">Nuvio</string>
+    <string name="app_brand_name">Apachiy</string>
     <string name="auth_account_deletion_failed">Account deletion failed</string>
     <string name="auth_sign_in_failed">Sign-in failed</string>
     <string name="auth_sign_out_failed">Sign-out failed</string>
@@ -1629,9 +1629,9 @@
     <string name="continue_watching_up_next_episode">Next Up • S%1$dE%2$d</string>
     <string name="detail_logo_content_description">%1$s logo</string>
     <string name="details_comments_load_failed">Failed to load comments</string>
-    <string name="details_load_failed_all_addons">Could not load details from any addon.</string>
+    <string name="details_load_failed_all_addons">No se pudieron cargar los detalles.</string>
     <string name="details_networks">Networks</string>
-    <string name="details_no_addon_meta">No addon provides meta for this content.</string>
+    <string name="details_no_addon_meta">No se pudieron cargar los detalles.</string>
     <string name="download_failed">Download failed</string>
     <string name="downloads_channel_description">Shows live download progress and controls.</string>
     <string name="downloads_channel_name">Downloads</string>
@@ -2240,4 +2240,28 @@
         <item quantity="one">%d title</item>
         <item quantity="other">%d titles</item>
     </plurals>
+    <string name="account_error_invalid_credentials">Invalid credentials</string>
+    <string name="account_error_email_not_confirmed">Please confirm your email first.</string>
+    <string name="account_error_email_already_registered">An account with this email already exists.</string>
+    <string name="account_error_invalid_email">Please enter a valid email address.</string>
+    <string name="account_error_password_too_short">Password is too short.</string>
+    <string name="account_error_password_too_weak">Password is too weak.</string>
+    <string name="account_error_signup_disabled">Sign up is currently disabled.</string>
+    <string name="account_error_rate_limited">Too many attempts. Please try again later.</string>
+    <string name="account_error_no_internet">No internet connection.</string>
+    <string name="account_error_connection_timeout">Connection timed out. Please try again.</string>
+    <string name="account_error_connection_refused">Could not connect to server.</string>
+    <string name="account_error_not_authenticated">Please sign in first.</string>
+    <string name="account_error_service_unavailable">Service unavailable. Please try again later.</string>
+    <string name="account_error_invalid_request">Invalid request. Please check your input.</string>
+    <string name="account_error_unexpected">An unexpected error occurred.</string>
+    <string name="device_limit_title">Device limit reached</string>
+    <string name="device_limit_message">You have reached the maximum number of devices allowed for your account. To manage them, visit apachiy.org/dashboard/devices.</string>
+    <string name="device_limit_manage_devices">Manage devices</string>
+    <string name="subscription_inactive_title">No active subscription</string>
+    <string name="subscription_inactive_message">You don’t have an active subscription. Manage your plan at apachiy.org/dashboard.</string>
+    <string name="subscription_inactive_manage">Manage subscription</string>
+    <string name="addon_denied_host">This addon is not allowed.</string>
+    <string name="player_error_try_another_option">A playback error occurred. Please try another source.</string>
+    <string name="player_loading_generic">Cargando…</string>
 </resources>

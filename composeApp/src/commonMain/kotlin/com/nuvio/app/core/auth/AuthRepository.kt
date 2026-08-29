@@ -9,8 +9,6 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.functions.functions
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,22 +35,15 @@ object AuthRepository {
     private var sessionStatusJob: Job? = null
     private var validatedRemoteUserId: String? = null
 
+    var lastAuthKind: LastAuthKind = LastAuthKind.None
+        private set
+
     fun initialize() {
         if (initialized) return
         initialized = true
 
-        val savedAnonId = AuthStorage.loadAnonymousUserId()
-        if (savedAnonId != null) {
-            _state.value = AuthState.Authenticated(
-                userId = savedAnonId,
-                email = null,
-                isAnonymous = true,
-            )
-        }
-
         sessionStatusJob = scope.launch {
             SupabaseProvider.client.auth.sessionStatus.collect { status ->
-                if (AuthStorage.loadAnonymousUserId() != null) return@collect
                 when (status) {
                     is SessionStatus.Authenticated -> {
                         val user = status.session.user
@@ -68,9 +59,7 @@ object AuthRepository {
                         _state.value = AuthState.Unauthenticated
                     }
                     is SessionStatus.Initializing -> {
-                        if (AuthStorage.loadAnonymousUserId() == null) {
-                            _state.value = AuthState.Loading
-                        }
+                        _state.value = AuthState.Loading
                     }
                     is SessionStatus.RefreshFailure -> {
                         _state.value = AuthState.Unauthenticated
@@ -99,45 +88,51 @@ object AuthRepository {
         }
     }
 
-    @OptIn(ExperimentalUuidApi::class)
     fun signInAnonymously() {
         _error.value = null
-        val userId = Uuid.random().toString()
-        AuthStorage.saveAnonymousUserId(userId)
-        _state.value = AuthState.Authenticated(
-            userId = userId,
-            email = null,
-            isAnonymous = true,
-        )
     }
+
+    suspend fun refreshCurrentSession(): Boolean =
+        runCatching {
+            SupabaseProvider.client.auth.refreshCurrentSession()
+            true
+        }.getOrElse { error ->
+            log.w(error) { "Failed to refresh current session" }
+            false
+        }
 
     suspend fun signUpWithEmail(email: String, password: String): Result<Unit> = runCatching {
         _error.value = null
+        lastAuthKind = LastAuthKind.SignUp
         SupabaseProvider.client.auth.signUpWith(Email) {
             this.email = email
             this.password = password
         }
         Unit
     }.onFailure { e ->
+        lastAuthKind = LastAuthKind.None
         log.e(e) { "Email sign-up failed" }
-        _error.value = e.safeAuthErrorDescription()
+        _error.value = userFacingAuthError(e)
             ?: getString(Res.string.auth_sign_up_failed)
     }
 
     suspend fun signInWithEmail(email: String, password: String): Result<Unit> = runCatching {
         _error.value = null
+        lastAuthKind = LastAuthKind.SignIn
         SupabaseProvider.client.auth.signInWith(Email) {
             this.email = email
             this.password = password
         }
     }.onFailure { e ->
+        lastAuthKind = LastAuthKind.None
         log.e(e) { "Email sign-in failed" }
-        _error.value = e.safeAuthErrorDescription()
+        _error.value = userFacingAuthError(e)
             ?: getString(Res.string.auth_sign_in_failed)
     }
 
     suspend fun signOut(): Result<Unit> {
         _error.value = null
+        lastAuthKind = LastAuthKind.None
         val anonymousRead = runCatching { AuthStorage.loadAnonymousUserId() }
         val wasAnonymous = anonymousRead.getOrNull() != null
         val anonymousClear = runCatching { AuthStorage.clearAnonymousUserId() }
@@ -284,4 +279,7 @@ object AuthRepository {
                 ?.description
                 ?.trim()
                 ?.takeIf { it.isNotEmpty() }
+
+    private suspend fun userFacingAuthError(error: Throwable): String =
+        getString(authErrorStringResource(error))
 }

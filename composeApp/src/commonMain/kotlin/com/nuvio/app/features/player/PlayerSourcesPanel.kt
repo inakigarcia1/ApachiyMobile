@@ -1,6 +1,5 @@
 package com.nuvio.app.features.player
 
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -34,7 +33,6 @@ import com.nuvio.app.features.streams.StreamsUiState
 import com.nuvio.app.features.streams.isSelectableForPlayback
 import nuvio.composeapp.generated.resources.Res
 import nuvio.composeapp.generated.resources.action_close
-import nuvio.composeapp.generated.resources.collections_tab_all
 import nuvio.composeapp.generated.resources.compose_action_reload
 import nuvio.composeapp.generated.resources.compose_player_episode_code_full
 import nuvio.composeapp.generated.resources.compose_player_no_streams_found
@@ -59,7 +57,6 @@ fun PlayerSourcesPanel(
     modifier: Modifier = Modifier,
 ) {
     val tokens = MaterialTheme.nuvio
-    val addonGroups = streamsUiState.groups
     val contentLabel = if (currentSeason != null && currentEpisode != null) {
         buildString {
             append(stringResource(Res.string.compose_player_episode_code_full, currentSeason, currentEpisode))
@@ -104,33 +101,6 @@ fun PlayerSourcesPanel(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
-
-            Spacer(Modifier.height(16.dp))
-
-            if (addonGroups.isNotEmpty()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .horizontalScroll(rememberScrollState())
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
-                ) {
-                    AddonFilterChip(
-                        label = stringResource(Res.string.collections_tab_all),
-                        isSelected = streamsUiState.selectedFilter == null,
-                        onClick = { onFilterSelected(null) },
-                    )
-                    addonGroups.forEach { group ->
-                        AddonFilterChip(
-                            label = group.addonName,
-                            isSelected = streamsUiState.selectedFilter == group.addonId,
-                            isLoading = group.isLoading,
-                            hasError = group.error != null,
-                            onClick = { onFilterSelected(group.addonId) },
-                        )
-                    }
-                }
-            }
 
             Spacer(Modifier.height(16.dp))
 
