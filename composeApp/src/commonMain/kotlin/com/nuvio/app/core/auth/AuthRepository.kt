@@ -1,6 +1,8 @@
 package com.nuvio.app.core.auth
 
 import co.touchlab.kermit.Logger
+import com.nuvio.app.core.device.ApachiyDeviceApi
+import com.nuvio.app.core.network.ApachiyConfig
 import com.nuvio.app.core.network.SupabaseProvider
 import com.nuvio.app.core.storage.LocalAccountDataCleaner
 import io.github.jan.supabase.auth.auth
@@ -8,7 +10,6 @@ import io.github.jan.supabase.auth.exception.AuthRestException
 import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.exceptions.RestException
-import io.github.jan.supabase.functions.functions
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -218,7 +219,15 @@ object AuthRepository {
 
     suspend fun deleteAccount(): Result<Unit> = runCatching {
         _error.value = null
-        SupabaseProvider.client.functions.invoke("delete-account")
+        if (ApachiyConfig.API_BASE_URL.isBlank()) {
+            error("API base URL is not configured.")
+        }
+        val token = SupabaseProvider.client.auth.currentAccessTokenOrNull()
+            ?: error("Not authenticated.")
+        val response = ApachiyDeviceApi.deleteAccount(token)
+        if (response.status !in 200..299) {
+            error("Account deletion failed with status ${response.status}.")
+        }
         SupabaseProvider.client.auth.signOut()
         validatedRemoteUserId = null
         try {

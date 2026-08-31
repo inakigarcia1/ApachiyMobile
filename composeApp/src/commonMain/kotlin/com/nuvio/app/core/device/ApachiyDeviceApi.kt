@@ -79,6 +79,14 @@ object ApachiyDeviceApi {
             body = "",
         )
 
+    suspend fun deleteAccount(bearerToken: String) =
+        httpRequestRaw(
+            method = "DELETE",
+            url = accountMeUrl(),
+            headers = authHeaders(bearerToken),
+            body = "",
+        )
+
     private fun apiUrl(path: String): String {
         val base = ApachiyConfig.API_BASE_URL.trim().trimEnd('/')
         return "$base/${path.trimStart('/')}"
