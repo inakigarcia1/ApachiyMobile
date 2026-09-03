@@ -8,12 +8,18 @@ import kotlinx.coroutines.launch
 internal fun PlayerScreenRuntime.fetchAddonSubtitlesForActiveItem() {
     val type = activeAddonSubtitleType.takeIf { it.isNotBlank() } ?: return
     val videoId = activeVideoId?.takeIf { it.isNotBlank() } ?: return
+    val hasEmbeddedSpanish = SubtitleLanguageMatching.hasEmbeddedSpanishSubtitleTrack(subtitleTracks)
+    if (hasEmbeddedSpanish) {
+        SubtitleRepository.clear()
+        return
+    }
     SubtitleRepository.fetchAddonSubtitles(
         type = type,
         videoId = videoId,
         videoHash = activeVideoHash,
         videoSize = activeVideoSize,
         filename = activeTorrentFilename,
+        hasEmbeddedSpanish = false,
     )
 }
 

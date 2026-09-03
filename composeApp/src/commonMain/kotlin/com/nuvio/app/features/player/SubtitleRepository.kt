@@ -53,7 +53,16 @@ object SubtitleRepository {
         videoHash: String? = null,
         videoSize: Long? = null,
         filename: String? = null,
+        hasEmbeddedSpanish: Boolean = false,
     ) {
+        if (hasEmbeddedSpanish) {
+            activeFetchJob?.cancel()
+            _addonSubtitles.value = emptyList()
+            _isLoading.value = false
+            _error.value = null
+            return
+        }
+
         activeFetchJob?.cancel()
         activeFetchJob = scope.launch {
             val requestType = canonicalSubtitleType(type)
@@ -81,6 +90,7 @@ object SubtitleRepository {
                             videoHash = videoHash,
                             videoSize = videoSize,
                             filename = filename,
+                            hasEmbeddedSpanish = false,
                         )
                         val subtitleUrl = buildAddonResourceUrl(
                             manifestUrl = manifest.transportUrl,

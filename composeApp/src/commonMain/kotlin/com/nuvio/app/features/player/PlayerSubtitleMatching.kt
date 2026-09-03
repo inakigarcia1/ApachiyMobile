@@ -346,6 +346,42 @@ internal object SubtitleLanguageMatching {
         return false
     }
 
+    private val SPANISH_TRACK_CODES = setOf(
+        "spa", "es", "es-es", "spl", "es-419", "es-la", "es-lat",
+    )
+
+    fun isEmbeddedSpanishSubtitleTrack(track: SubtitleTrack): Boolean =
+        isEmbeddedSpanishLanguage(track.language, track.label, track.id)
+
+    fun hasEmbeddedSpanishSubtitleTrack(tracks: Collection<SubtitleTrack>): Boolean =
+        tracks.any { isEmbeddedSpanishSubtitleTrack(it) }
+
+    fun isEmbeddedSpanishLanguage(
+        language: String?,
+        label: String? = null,
+        trackId: String? = null,
+    ): Boolean {
+        val fields = listOfNotNull(language, label, trackId)
+        if (fields.isEmpty()) return false
+        for (field in fields) {
+            val code = field.trim().lowercase().replace('_', '-')
+            if (code in SPANISH_TRACK_CODES || code == "es" || code.startsWith("es-")) {
+                return true
+            }
+            val normalized = normalizeLanguageCode(field)
+            if (normalized == "es" || normalized == "es-419") {
+                return true
+            }
+        }
+        val haystack = fields.joinToString(" ").lowercase()
+        if (LATINO_TAGS.any { haystack.contains(it) }) return true
+        if (CASTILIAN_TAGS.any { haystack.contains(it) }) return true
+        return haystack.contains("spanish") ||
+            haystack.contains("espanol") ||
+            haystack.contains("español") ||
+            haystack.contains("castellano")
+    }
+
     fun trackMatchesLanguage(
         name: String?,
         language: String?,

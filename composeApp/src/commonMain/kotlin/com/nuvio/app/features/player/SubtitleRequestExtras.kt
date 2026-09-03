@@ -6,6 +6,7 @@ fun buildSubtitleExtraPathSegment(
     videoHash: String? = null,
     videoSize: Long? = null,
     filename: String? = null,
+    hasEmbeddedSpanish: Boolean? = null,
 ): String? {
     val params = buildList {
         videoHash?.trim()?.takeIf { it.isNotBlank() }?.let { add("videoHash=$it") }
@@ -13,6 +14,7 @@ fun buildSubtitleExtraPathSegment(
         filename?.trim()?.takeIf { it.isNotBlank() }?.let { value ->
             add("filename=${value.encodeAddonPathSegment()}")
         }
+        hasEmbeddedSpanish?.let { add("hasEmbeddedSpanish=$it") }
     }
     return params.joinToString("&").takeIf { it.isNotEmpty() }
 }

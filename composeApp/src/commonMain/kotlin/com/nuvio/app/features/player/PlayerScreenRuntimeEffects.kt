@@ -237,11 +237,22 @@ internal fun PlayerScreenRuntime.BindPlayerRuntimeEffects() {
         addonSubtitleFetchKey,
         playerController,
         playerControllerSourceUrl,
+        subtitleTracks,
     ) {
         val fetchKey = addonSubtitleFetchKey ?: return@LaunchedEffect
+        if (SubtitleLanguageMatching.hasEmbeddedSpanishSubtitleTrack(subtitleTracks)) {
+            SubtitleRepository.clear()
+            return@LaunchedEffect
+        }
         if (autoFetchedAddonSubtitlesForKey == fetchKey) return@LaunchedEffect
         autoFetchedAddonSubtitlesForKey = fetchKey
         fetchAddonSubtitlesForActiveItem()
+    }
+
+    LaunchedEffect(subtitleTracks) {
+        if (SubtitleLanguageMatching.hasEmbeddedSpanishSubtitleTrack(subtitleTracks)) {
+            SubtitleRepository.clear()
+        }
     }
 
     LaunchedEffect(playbackSnapshot.isLoading, playerController) {
