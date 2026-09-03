@@ -484,6 +484,7 @@
     <string name="compose_search_empty_failed_title">Search failed</string>
     <string name="compose_search_empty_no_active_addons_message">Install and validate at least one addon before searching.</string>
     <string name="compose_search_empty_no_active_addons_title">No active addons</string>
+    <string name="compose_search_error_restart_message">Error searching, please restart the application and try again.</string>
     <string name="compose_search_empty_no_results_message">Installed searchable catalogs did not return any matches for this query.</string>
     <string name="compose_search_empty_no_results_title">No results found</string>
     <string name="compose_search_empty_no_search_catalogs_message">Your installed addons do not expose catalog search.</string>

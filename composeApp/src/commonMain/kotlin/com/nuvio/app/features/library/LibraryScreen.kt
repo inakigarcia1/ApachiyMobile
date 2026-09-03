@@ -130,7 +130,9 @@ fun LibraryScreen(
     var observedOfflineState by remember { mutableStateOf(false) }
     var sourceModeName by rememberSaveable { mutableStateOf(LibraryViewMode.Saved.name) }
     val sourceMode = remember(sourceModeName) {
-        runCatching { LibraryViewMode.valueOf(sourceModeName) }.getOrDefault(LibraryViewMode.Saved)
+        runCatching { LibraryViewMode.valueOf(sourceModeName) }
+            .getOrDefault(LibraryViewMode.Saved)
+            .let { mode -> if (mode == LibraryViewMode.Cloud) LibraryViewMode.Saved else mode }
     }
     var selectedProviderId by rememberSaveable { mutableStateOf<String?>(null) }
     var selectedTypeName by rememberSaveable { mutableStateOf<String?>(null) }
@@ -299,13 +301,6 @@ fun LibraryScreen(
                                     }
                                 }
                             },
-                        )
-                        LibrarySourceSwitch(
-                            selectedMode = sourceMode,
-                            onModeSelected = { mode ->
-                                sourceModeName = mode.name
-                            },
-                            modifier = Modifier.padding(horizontal = 16.dp),
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                     }

@@ -414,8 +414,9 @@
     <string name="compose_search_discover_title">Descubrir</string>
     <string name="compose_search_empty_failed_message">Los complementos instalados no devolvieron resultados de búsqueda válidos.</string>
     <string name="compose_search_empty_failed_title">La búsqueda falló</string>
-    <string name="compose_search_empty_no_active_addons_message">Instala y valida al menos un complemento antes de buscar.</string>
+    <string name="compose_search_empty_no_active_addons_message"></string>
     <string name="compose_search_empty_no_active_addons_title">No hay complementos activos</string>
+    <string name="compose_search_error_restart_message">Error al buscar, por favor, reinicie la aplicación e intente nuevamente.</string>
     <string name="compose_search_empty_no_results_message">Los catálogos instalados no devolvieron coincidencias para esta consulta.</string>
     <string name="compose_search_empty_no_results_title">No se encontraron resultados</string>
     <string name="compose_search_empty_no_search_catalogs_message">Tus complementos instalados no exponen búsqueda de catálogo.</string>

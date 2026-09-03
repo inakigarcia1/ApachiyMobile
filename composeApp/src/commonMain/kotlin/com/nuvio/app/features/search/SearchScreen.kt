@@ -72,8 +72,7 @@ import nuvio.composeapp.generated.resources.compose_search_clear
 import nuvio.composeapp.generated.resources.compose_search_discover_title
 import nuvio.composeapp.generated.resources.compose_search_empty_failed_message
 import nuvio.composeapp.generated.resources.compose_search_empty_failed_title
-import nuvio.composeapp.generated.resources.compose_search_empty_no_active_addons_message
-import nuvio.composeapp.generated.resources.compose_search_empty_no_active_addons_title
+import nuvio.composeapp.generated.resources.compose_search_error_restart_message
 import nuvio.composeapp.generated.resources.compose_search_empty_no_results_message
 import nuvio.composeapp.generated.resources.compose_search_empty_no_results_title
 import nuvio.composeapp.generated.resources.compose_search_empty_no_search_catalogs_message
@@ -425,8 +424,8 @@ private fun SearchEmptyStateCard(
 
     when (reason) {
         SearchEmptyStateReason.NoActiveAddons -> {
-            title = stringResource(Res.string.compose_search_empty_no_active_addons_title)
-            message = stringResource(Res.string.compose_search_empty_no_active_addons_message)
+            title = stringResource(Res.string.compose_search_error_restart_message)
+            message = ""
         }
 
         SearchEmptyStateReason.NoSearchCatalogs -> {
